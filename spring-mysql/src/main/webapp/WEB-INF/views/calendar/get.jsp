@@ -10,6 +10,13 @@
 <!-- style -->
 <!-- jQuery -->
 <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+<script type="text/javascript">
+function popup(){
+	var url = "http://localhost:8080/calendar/get?year=2020&month=1&ms=0&userno=" + ${calendar.userno}
+	var name = "popup"
+	window.open(url, name, "width=500, height=600, toolbar=no, status=no, location=no, menubar=no, scrollbars=no, resizable=no")
+}
+</script>
 <style>
 th {
 	font-size: 20px;
@@ -103,7 +110,7 @@ a {
 				<tr>
 					<c:forEach var="weekList" items="${calList}">
 						<c:forEach var="daySchedules" items="${weekList}">
-						<td onMouseOver="this.style.background='#FAF4C0'" onMouseOut="this.style.background='white'" style="cursor:pointer">
+						<td onClick="popup()" onMouseOver="this.style.background='#FAF4C0'" onMouseOut="this.style.background='white'" style="cursor:pointer">
 								<c:choose>
 									<c:when test="${daySchedules.isHoliday eq 'Y'}">
 										<div class="holy">
