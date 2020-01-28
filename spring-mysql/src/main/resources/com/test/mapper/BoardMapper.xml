@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.test.mapper.BoardMapper">
+
+	<select id="getList" resultType="com.test.domain.BoardVO">
+		<!-- CDATA는 안에 들어가는 테스트가 파싱되지 않게 하는 기능 -->
+		/* BoardMapper.getList */
+		<![CDATA[
+			SELECT * FROM tbl_board WHERE bno >0
+		]]>
+	</select>
+
+	<insert id="insert">
+		/* BoardMapper.insert */
+		INSERT INTO tbl_board (title,
+		content, writer)
+		VALUES (#{title}, #{content}, #{writer})
+	</insert>
+
+	<insert id="insertSelectKey">
+		<selectKey keyProperty="bno" order="BEFORE"
+			resultType="long">
+			SELECT IFNULL(MAX(bno), 0) + 1 FROM tbl_board
+		</selectKey>
+		/* BoardMapper.insertSelectKey */
+		INSERT INTO tbl_board (bno, title, content, writer)
+		VALUES (#{bno}, #{title}, #{content}, #{writer})
+	</insert>
+	
+	<select id="read" resultType="com.test.domain.BoardVO">
+		SELECT * FROM tbl_board WHERE bno = #{bno}
+	</select>
+	
+	<delete id="delete">
+		/* BoardMapper.delete */
+		DELETE FROM tbl_board WHERE bno = #{bno}
+	</delete>
+	
+	<update id="update">
+		/* BoardMapper.update */
+		UPDATE tbl_board
+		SET title=#{title}, content=#{content}, writer=#{writer}, updatedate=NOW()
+		WHERE bno=#{bno} 
+	</update>
+</mapper>
