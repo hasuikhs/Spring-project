@@ -51,29 +51,26 @@ a {
 <body>
 	
 	<button type="button"
-		onclick="location.href='<c:url value='../user/login'/>'">로그인</button>
-		
-	<button type="button"
-		onclick="location.href='<c:url value='../user/login'/>'">일정 추가</button>
+		onclick="location.href='<c:url value='../board/list'/>'">게시판으로</button>
 
 	<center>
 
 		<p id="title">
 			<button type="button"
-				onclick="location.href='<c:url value='./get?year=${calendar.year}&month=${calendar.today}&ms=${calendar.ms}'/>'">오늘</button>
+				onclick="location.href='<c:url value='./get?year=${calendar.year}&month=${calendar.today}&ms=${calendar.ms}&userno=${calendar.userno}'/>'">오늘</button>
 			<a
-				href="<c:url value='./get?year=${calendar.year}&month=${calendar.month - 1}&ms=${calendar.ms}'/>">&lt;&emsp;</a>
+				href="<c:url value='./get?year=${calendar.year}&month=${calendar.month - 1}&ms=${calendar.ms}&userno=${calendar.userno}'/>">&lt;&emsp;</a>
 			${calendar.calTitle} <a
-				href="<c:url value='./get?year=${calendar.year}&month=${calendar.month + 1}&ms=${calendar.ms}'/>">&emsp;&gt;</a>
+				href="<c:url value='./get?year=${calendar.year}&month=${calendar.month + 1}&ms=${calendar.ms}&userno=${calendar.userno}'/>">&emsp;&gt;</a>
 
 			<c:choose>
 				<c:when test="${calendar.ms eq 0}">
 					<button type="button"
-						onclick="location.href='<c:url value='./get?year=${calendar.year}&month=${calendar.month}&ms=1'/>'">월~</button>
+						onclick="location.href='<c:url value='./get?year=${calendar.year}&month=${calendar.month}&ms=1&userno=${calendar.userno}'/>'">월~</button>
 				</c:when>
 				<c:otherwise>
 					<button type="button"
-						onclick="location.href='<c:url value='./get?year=${calendar.year}&month=${calendar.month}&ms=0'/>'">일~</button>
+						onclick="location.href='<c:url value='./get?year=${calendar.year}&month=${calendar.month}&ms=0&userno=${calendar.userno}'/>'">일~</button>
 				</c:otherwise>
 			</c:choose>
 		</p>

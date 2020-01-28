@@ -14,13 +14,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.test.domain.GlobalDefine;
+import com.test.domain.ScheduleVO;
+import com.test.mapper.ScheduleMapper;
 
 @Service
 public class CalendarServiceImpl implements CalendarService {
 
+	@Autowired
+	private ScheduleMapper mapper;
+	
 	DateFormat formatYM = new SimpleDateFormat("yyyy. MM");
 	
 	@SuppressWarnings("deprecation")
@@ -34,16 +40,16 @@ public class CalendarServiceImpl implements CalendarService {
 
 		result.put("userno", userno);
 		
-		year -= 1900;
+		year -= GlobalDefine.CORRECTED_YEAR;
 		month--;
 
 		Date cal = new Date();
 
-		result.put("today", cal.getMonth() + 1);
+		result.put("today", cal.getMonth() + GlobalDefine.CORRECTED_MONTH);
 
 		cal.setYear(year);
 		cal.setMonth(month);
-		cal.setDate(1);
+		cal.setDate(GlobalDefine.START_DAY);
 
 		Date cloneCal = new Date();
 		cloneCal.setMonth(cal.getMonth());
@@ -58,11 +64,11 @@ public class CalendarServiceImpl implements CalendarService {
 
 		ArrayList<String> arrCal = new ArrayList<String>();
 
-		int day = 1;
+		int day = GlobalDefine.START_DAY;
 		int lengthOfMonth = cal.getDay() + lastDayOfMonth;
 
-		int normalLength = GlobalDefine.WEEK_DAY * 5;
-		int maxLength = GlobalDefine.WEEK_DAY * 6;
+		int normalLength = GlobalDefine.WEEK_DAY * GlobalDefine.NORAML_CALENDAR_LINE;
+		int maxLength = GlobalDefine.WEEK_DAY * GlobalDefine.MAX_CALENDAR_LINE;
 
 		// 월먼저 일먼저 계산
 		int msYesOrNo = calculMonSun(ms);
@@ -84,6 +90,8 @@ public class CalendarServiceImpl implements CalendarService {
 
 		// readTsv
 		Map<String, Map<String, String>> holy = readTsv(cal);
+		
+		readDB(userno, cal, holy);
 
 		// mapedSchedule
 		List<List<List<Map<String, String>>>> schedulCal = mapedSchedule(cal, weeks, holy);
@@ -91,6 +99,66 @@ public class CalendarServiceImpl implements CalendarService {
 		result.put("collection", schedulCal);
 
 		return result;
+	}
+
+	private List<List<List<Map<String, String>>>> mapedSchedule(Date cal, List<List<String>> weeks,
+			Map<String, Map<String, String>> holy) {
+		List<List<List<Map<String, String>>>> schedulCal = new ArrayList<List<List<Map<String, String>>>>();
+
+		for (List<String> week : weeks) {
+			List<List<Map<String, String>>> innerList = new ArrayList<List<Map<String, String>>>();
+
+			Iterator<String> it = week.iterator();
+
+			while (it.hasNext()) {
+				List<Map<String, String>> innerListOfList = new ArrayList<Map<String, String>>();
+				Map<String, String> schedule = new HashMap<String, String>();
+				String itThis = it.next();
+				schedule.put("day", itThis);
+
+				if (holy.containsKey(itThis)) {
+					schedule.put("isHoliday", holy.get(itThis).get("holiday"));
+					schedule.put("anni", holy.get(itThis).get("anni"));
+					if (holy.get(itThis).containsKey("addAnni")) {
+						schedule.put("addAnni", holy.get(itThis).get("addAnni"));
+						schedule.put("isHoliday2", holy.get(itThis).get("holiday2"));
+					}
+				}
+				if (itThis != " ") {
+					cal.setDate(Integer.parseInt(itThis));
+					if (cal.getDay() == GlobalDefine.SUN_DAY || cal.getDay() == GlobalDefine.SATUR_DAY) {
+						schedule.put("isHoliday", "Y");
+					}
+				}
+				innerListOfList.add(schedule);
+				innerList.add(innerListOfList);
+			}
+			schedulCal.add(innerList);
+		}
+		return schedulCal;
+	}
+
+	private void readDB(long userno, Date cal, Map<String, Map<String, String>> holy) {
+		List<ScheduleVO> schedules = mapper.getScheduleList((int)userno);
+		
+		for (ScheduleVO schedulevo : schedules) {
+			if (schedulevo.getAnnidate().getYear() == cal.getYear() && schedulevo.getAnnidate().getMonth() == cal.getMonth()) {
+				Map<String, String> map = new HashMap<String, String>();
+				if (!holy.containsKey(schedulevo.getAnnidate().getDate())) {
+					map.put("anni", schedulevo.getAnnititle());
+					map.put("holiday", schedulevo.getIsholiday());
+					
+				}  else {
+					Map<String, String> temp = new HashMap<String, String>();
+					temp = holy.get(Integer.toString(schedulevo.getAnnidate().getDate()));
+					map.put("anni", temp.get("anni"));
+					map.put("holiday", temp.get("holiday"));
+					map.put("addAnni", schedulevo.getAnnititle());
+					map.put("holiday2", schedulevo.getIsholiday());
+				}
+				holy.put(Integer.toString(schedulevo.getAnnidate().getDate()), map);
+			}
+		}
 	}
 
 	// 월먼저 일먼저
@@ -107,8 +175,8 @@ public class CalendarServiceImpl implements CalendarService {
 	// 말일 구하기
 	@SuppressWarnings("deprecation")
 	private int calculLastDay(Date cal, Date cloneCal) {
-		int lastDayOfMonth = 28;
-		for (; lastDayOfMonth <= 35; lastDayOfMonth++) {
+		int lastDayOfMonth = GlobalDefine.MIN_DAY_OF_MONTH;
+		for (; lastDayOfMonth <= GlobalDefine.MAX_CNT_OF_MONTH; lastDayOfMonth++) {
 			cloneCal.setDate(lastDayOfMonth);
 			if (cloneCal.getMonth() != cal.getMonth()) {
 				lastDayOfMonth--;
@@ -145,8 +213,8 @@ public class CalendarServiceImpl implements CalendarService {
 
 			while ((line = br.readLine()) != null) {
 				split = Arrays.asList(line.split("\t"));
-				if (Integer.parseInt(split.get(0).substring(0, 4)) == (cal.getYear() + 1900)
-						&& Integer.parseInt(split.get(0).substring(5, 7)) == (cal.getMonth() + 1)) {
+				if (Integer.parseInt(split.get(0).substring(0, 4)) == (cal.getYear() + GlobalDefine.CORRECTED_YEAR)
+						&& Integer.parseInt(split.get(0).substring(5, 7)) == (cal.getMonth() + GlobalDefine.CORRECTED_MONTH)) {
 
 					Map<String, String> map = new HashMap<String, String>();
 
@@ -168,44 +236,5 @@ public class CalendarServiceImpl implements CalendarService {
 			System.out.println("text 마지막 줄(공백)을 삭제 바람");
 		}
 		return holy;
-	}
-
-	@SuppressWarnings("deprecation")
-	private List<List<List<Map<String, String>>>> mapedSchedule(Date cal, List<List<String>> weeks,
-			Map<String, Map<String, String>> holy) {
-		List<List<List<Map<String, String>>>> schedulCal = new ArrayList<List<List<Map<String, String>>>>();
-
-		for (List<String> week : weeks) {
-			List<List<Map<String, String>>> innerList = new ArrayList<List<Map<String, String>>>();
-
-			Iterator<String> it = week.iterator();
-
-			while (it.hasNext()) {
-				List<Map<String, String>> innerListOfList = new ArrayList<Map<String, String>>();
-				Map<String, String> schedule = new HashMap<String, String>();
-				String itThis = it.next();
-				schedule.put("day", itThis);
-
-				if (holy.containsKey(itThis)) {
-					schedule.put("isHoliday", holy.get(itThis).get("holiday"));
-					schedule.put("anni", holy.get(itThis).get("anni"));
-					if (holy.get(itThis).containsKey("addAnni")) {
-						schedule.put("addAnni", holy.get(itThis).get("addAnni"));
-						schedule.put("isHoliday2", holy.get(itThis).get("holiday2"));
-					}
-				}
-				if (itThis != " ") {
-					cal.setDate(Integer.parseInt(itThis));
-					if (cal.getDay() == 0 || cal.getDay() == 6) {
-						schedule.put("isHoliday", "Y");
-					}
-				}
-				innerListOfList.add(schedule);
-				innerList.add(innerListOfList);
-			}
-			schedulCal.add(innerList);
-		}
-
-		return schedulCal;
 	}
 }

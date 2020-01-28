@@ -273,7 +273,7 @@
 									int year = cal.getYear() + 1900;
 									int month = cal.getMonth() + 1;
 								%>
-						<li><a href="../calendar/get?year=<%= year %>&month=<%= month %>&ms=0"><i class="fa fa-edit fa-fw"></i>
+						<li><a href="../user/login"><i class="fa fa-edit fa-fw"></i>
 								Calendar</a></li>
 						<li><a href="#"><i class="fa fa-wrench fa-fw"></i> UI
 								Elements<span class="fa arrow"></span></a>

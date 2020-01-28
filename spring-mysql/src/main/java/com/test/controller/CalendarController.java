@@ -17,7 +17,6 @@ public class CalendarController {
 	
 	@RequestMapping("/get")
 	public void calendar(Model model, @RequestParam("year") int year, @RequestParam("month") int month, @RequestParam("ms") int ms, @RequestParam("userno") long userno) {
-		System.out.println("userno------------------" + userno);
 		model.addAttribute("calendar", service.calendar(year, month, ms, userno));
 	}
 }
