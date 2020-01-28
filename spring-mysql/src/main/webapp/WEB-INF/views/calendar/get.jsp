@@ -102,7 +102,8 @@ a {
 			<c:forEach var="calList" items="${calendar.collection}">
 				<tr>
 					<c:forEach var="weekList" items="${calList}">
-						<td><c:forEach var="daySchedules" items="${weekList}">
+						<c:forEach var="daySchedules" items="${weekList}">
+						<td onMouseOver="this.style.background='#FAF4C0'" onMouseOut="this.style.background='white'" style="cursor:pointer">
 								<c:choose>
 									<c:when test="${daySchedules.isHoliday eq 'Y'}">
 										<div class="holy">
@@ -116,7 +117,8 @@ a {
 										${daySchedules.addAnni }
 									</c:otherwise>
 								</c:choose>
-							</c:forEach></td>
+								</td>
+							</c:forEach>
 					</c:forEach>
 				</tr>
 			</c:forEach>

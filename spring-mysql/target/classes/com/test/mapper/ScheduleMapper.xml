@@ -8,8 +8,30 @@
 		SELECT * FROM tbl_calendar
 	</select>
 
-	<select id="getScheduleList" resultType='com.test.domain.ScheduleVO'>
+	<select id="getScheduleList"
+		resultType='com.test.domain.ScheduleVO'>
 		/* ScheduleMapper.getScheduleList */
-		Select * FROM tbl_calendar WHERE userno = #{userno}
+		Select * FROM tbl_calendar 
+		WHERE userno = #{userno}
 	</select>
+
+	<insert id="insertSchedule">
+		/* ScheduleMapper.insertSchedule */
+		INSERT INTO	tbl_calendar
+		(userno, annititle, annidate, isholiday)
+		VALUES (#{userno}, #{annititle}, #{annidate}, #{isholiday})
+	</insert>
+
+	<update id="updateSchedule">
+		/* ScheduleMapper.updateSchedule */
+		UPDATE tbl_calendar
+		SET annititle=#{annititle}, annidate=#{annidate}, isholiday=#{isholiday}
+		WHERE cno=#{cno}
+	</update>
+
+	<delete id="deleteSchedule">
+		/* ScheduleMapper.deleteSchedule */
+		DELETE FROM
+		tbl_calendar WHERE cno=#{cno}
+	</delete>
 </mapper>
