@@ -21,4 +21,8 @@ public class GlobalDefine {
 	
 	public static final int MAX_CNT_OF_MONTH = 35;
 	
+	public static final int SUNDAY_FIRST_FORM = 0;
+	
+	public static final int MONDAY_FIRST_FORM = 1;
+	
 }

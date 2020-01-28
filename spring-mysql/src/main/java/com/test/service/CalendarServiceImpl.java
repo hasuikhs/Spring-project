@@ -101,6 +101,8 @@ public class CalendarServiceImpl implements CalendarService {
 		return result;
 	}
 
+	// Mapped Schedule
+	@SuppressWarnings("deprecation")
 	private List<List<List<Map<String, String>>>> mapedSchedule(Date cal, List<List<String>> weeks,
 			Map<String, Map<String, String>> holy) {
 		List<List<List<Map<String, String>>>> schedulCal = new ArrayList<List<List<Map<String, String>>>>();
@@ -138,6 +140,8 @@ public class CalendarServiceImpl implements CalendarService {
 		return schedulCal;
 	}
 
+	// Read Schedules In DB
+	@SuppressWarnings({ "deprecation", "unlikely-arg-type" })
 	private void readDB(long userno, Date cal, Map<String, Map<String, String>> holy) {
 		List<ScheduleVO> schedules = mapper.getScheduleList((int)userno);
 		
@@ -163,11 +167,11 @@ public class CalendarServiceImpl implements CalendarService {
 
 	// 월먼저 일먼저
 	private int calculMonSun(int ms) {
-		int msYesOrNo = 0;
-		if (ms == 0) {
-			msYesOrNo = 0;
+		int msYesOrNo = GlobalDefine.SUNDAY_FIRST_FORM;
+		if (ms == GlobalDefine.SUNDAY_FIRST_FORM) {
+			msYesOrNo = GlobalDefine.SUNDAY_FIRST_FORM;
 		} else {
-			msYesOrNo = 1;
+			msYesOrNo = GlobalDefine.MONDAY_FIRST_FORM;
 		}
 		return msYesOrNo;
 	}
