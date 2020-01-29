@@ -3,6 +3,7 @@ package com.test.service;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,14 +26,36 @@ public class ScheduleServiceImpl implements ScheduleService{
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public String getDayName(Map<String, Integer> map) {
+	public Map<String, Object> getDayName(Map<String, Integer> map) {
+		
+		Map<String, Object> result = new HashMap<String, Object>();
+		
 		DateFormat formatYM = new SimpleDateFormat("yyyy-MM-dd-E");
+		
 		Date date = new Date();
+		
 		date.setYear(map.get("year") - GlobalDefine.CORRECTED_YEAR);
 		date.setMonth(map.get("month") - GlobalDefine.CORRECTED_MONTH);
 		date.setDate(map.get("day"));
 		
 		String datestr = formatYM.format(date);
-		return datestr;
+		
+		result.put("datestr", datestr);
+		
+		String holy = "N";
+		
+		if (date.getDay() == GlobalDefine.SATUR_DAY || date.getDay() == GlobalDefine.SUN_DAY) {
+			holy = "Y";
+		}
+		
+		result.put("holy", holy);
+		
+		result.put("userno", map.get("userno"));
+		return result;
+	}
+
+	@Override
+	public void insertSchedule(ScheduleVO schedule) {
+		mapper.insertSchedule(schedule);
 	}
 }

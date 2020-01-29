@@ -7,11 +7,24 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=EUC-KR">
 
-<title>${date}요일 일정</title>
+<title>${date.datestr}요일 일정</title>
+<style type="text/css">
+#footer {
+	position: absolute;
+	bottom: 20px;
+}
+</style>
 </head>
 <body>
 	<center>
-		<strong>${date}요일 일정</strong>
+		<c:choose>
+			<c:when test="${date.holy eq 'Y'}">
+				<strong style="color:red;">${date.datestr}</strong>
+			</c:when>
+			<c:otherwise>
+				<strong>${date.datestr}</strong>
+			</c:otherwise>
+		</c:choose>
 		<table border="3">
 			<tr>
 				<c:choose>
@@ -24,6 +37,13 @@
 				</c:choose>
 			</tr>
 		</table>
+		<div id="footer">
+			<form action="./create" method="GET">
+				<button type="submit" name="userno" value=${date.userno }>추가</button>
+			</form>
+			<input type="button" value="삭제" onClick="location.href='#'">
+			<input type="button" value="수정" onClick="location.href='#'">
+		</div>
 	</center>
 
 </body>
