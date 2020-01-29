@@ -1,7 +1,10 @@
 package com.test.mapper;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -60,5 +63,16 @@ public class ScheduleMapperTests {
 	//@Test
 	public void testDelete() {
 		mapper.deleteSchedule(4);
+	}
+	
+	//@Test
+	public void testScheduleByID() {
+		Map<String, Integer> map = new HashMap<String, Integer>();
+		map.put("userno", 1);
+		map.put("year", 2020);
+		map.put("month", 1);
+		map.put("day", 28);
+		
+		log.info(mapper.getScheduleOfDayByUserno(map));
 	}
 }

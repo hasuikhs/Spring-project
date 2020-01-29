@@ -11,10 +11,15 @@
 <!-- jQuery -->
 <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
 <script type="text/javascript">
-function popup(){
-	var url = "http://localhost:8080/calendar/get?year=2020&month=1&ms=0&userno=" + ${calendar.userno}
+
+function popup(year, month, day, userno){
+	
+	var url = "./schedule/get?year=" + year + "&month=" + month + "&day=" + day + "&userno=" + userno;
+			
 	var name = "popup"
-	window.open(url, name, "width=500, height=600, toolbar=no, status=no, location=no, menubar=no, scrollbars=no, resizable=no")
+	
+	window.open(url, name, "width=400, height=300, toolbar=no, status=no, location=no, menubar=no, scrollbars=no, resizable=no")
+	
 }
 </script>
 <style>
@@ -56,7 +61,7 @@ a {
 </style>
 </head>
 <body>
-	
+
 	<button type="button"
 		onclick="location.href='<c:url value='../board/list'/>'">게시판으로</button>
 
@@ -110,8 +115,10 @@ a {
 				<tr>
 					<c:forEach var="weekList" items="${calList}">
 						<c:forEach var="daySchedules" items="${weekList}">
-						<td onClick="popup()" onMouseOver="this.style.background='#FAF4C0'" onMouseOut="this.style.background='white'" style="cursor:pointer">
-								<c:choose>
+							<td onClick="javascript: popup(${calendar.year}, ${calendar.month}, ${daySchedules.day}, ${calendar.userno})"
+								onMouseOver="this.style.background='#FAF4C0'"
+								onMouseOut="this.style.background='white'"
+								style="cursor: pointer"><c:choose>
 									<c:when test="${daySchedules.isHoliday eq 'Y'}">
 										<div class="holy">
 											${daySchedules.day}<br> ${daySchedules.anni }
@@ -123,9 +130,8 @@ a {
 										${daySchedules.anni }<br>
 										${daySchedules.addAnni }
 									</c:otherwise>
-								</c:choose>
-								</td>
-							</c:forEach>
+								</c:choose></td>
+						</c:forEach>
 					</c:forEach>
 				</tr>
 			</c:forEach>

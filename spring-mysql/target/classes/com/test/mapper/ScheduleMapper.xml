@@ -7,6 +7,18 @@
 		/* ScheduleMapper.getList */
 		SELECT * FROM tbl_calendar
 	</select>
+	
+	<select id="getScheduleOfDayByUserno" resultType="com.test.domain.ScheduleVO">
+		/* ScheduleMapper.getScheduleOfDayByUserno */
+		SELECT * FROM tbl_calendar
+		WHERE userno=#{userno} 
+		AND 
+		YEAR(annidate)=#{year} 
+		AND
+		MONTH(annidate)=#{month}
+		AND
+		DAY(annidate)=#{day}
+	</select>
 
 	<select id="getScheduleList"
 		resultType='com.test.domain.ScheduleVO'>
