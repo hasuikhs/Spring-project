@@ -29,6 +29,62 @@ public class GradeServiceImpl implements GradeService {
 
 		calculGrade(gradeListByUser);
 
+		// korean
+		Collections.sort(gradeListByUser, new CompareKorDesc());
+		int cnt = 0;
+		for (Map<String, String> map : gradeListByUser) {
+			if (cnt == 0) {
+				map.put("korRank", "+");
+			} else if (cnt == gradeListByUser.size() - 1) {
+				map.put("korRank", "-");
+			} else {
+				map.put("korRank", " ");
+			}
+			cnt++;
+		}
+
+		// english
+		Collections.sort(gradeListByUser, new CompareEngDesc());
+		cnt = 0;
+		for (Map<String, String> map : gradeListByUser) {
+			if (cnt == 0) {
+				map.put("engRank", "+");
+			} else if (cnt == gradeListByUser.size() - 1) {
+				map.put("engRank", "-");
+			} else {
+				map.put("engRank", " ");
+			}
+			cnt++;
+		}
+
+		// math
+		Collections.sort(gradeListByUser, new CompareMathDesc());
+		cnt = 0;
+		for (Map<String, String> map : gradeListByUser) {
+			if (cnt == 0) {
+				map.put("mathRank", "+");
+			} else if (cnt == gradeListByUser.size() - 1) {
+				map.put("mathRank", "-");
+			} else {
+				map.put("mathRank", " ");
+			}
+			cnt++;
+		}
+
+		// sum
+		Collections.sort(gradeListByUser, new CompareSumDesc());
+		cnt = 0;
+		for (Map<String, String> map : gradeListByUser) {
+			if (cnt == 0) {
+				map.put("sumRank", "+");
+			} else if (cnt == gradeListByUser.size() - 1) {
+				map.put("sumRank", "-");
+			} else {
+				map.put("sumRank", " ");
+			}
+			cnt++;
+		}
+
 		return gradeListByUser;
 	}
 
@@ -125,6 +181,7 @@ public class GradeServiceImpl implements GradeService {
 		return allGradeList;
 	}
 
+	// sum & avg
 	@Override
 	public List<HashMap<String, Object>> calculDataBySubject() {
 
@@ -172,33 +229,41 @@ public class GradeServiceImpl implements GradeService {
 		return resultList;
 	}
 
+	// sort
 	@Override
-	public List<HashMap<String, String>> sort(String standard) {
+	public List<HashMap<String, String>> sort(String sort) {
 
 		List<HashMap<String, String>> mapList = readData();
 
-		switch (standard) {
-			case "korean":
-				Collections.sort(mapList, new CompareKorDesc());
-				break;
-			
-			case "english":
-				Collections.sort(mapList, new CompareEngDesc());
-				break;
-				
-			case "math":
-				Collections.sort(mapList, new CompareMathDesc());
-				break;
-			
-			case "sum":
-				Collections.sort(mapList, new CompareSumDesc());
-				break;
+		switch (sort) {
+		case "korean":
+			Collections.sort(mapList, new CompareKorDesc());
+			break;
+
+		case "english":
+			Collections.sort(mapList, new CompareEngDesc());
+			break;
+
+		case "math":
+			Collections.sort(mapList, new CompareMathDesc());
+			break;
+
+		case "sum":
+			Collections.sort(mapList, new CompareSumDesc());
+			break;
+		}
+
+		int rank = 1;
+		for (Map<String, String> map : mapList) {
+			map.put("rank", Integer.toString(rank));
+			rank++;
 		}
 
 		return mapList;
 	}
 }
 
+// order by korean
 class CompareKorDesc implements Comparator<Map<String, String>> {
 
 	@Override
@@ -208,6 +273,7 @@ class CompareKorDesc implements Comparator<Map<String, String>> {
 	}
 }
 
+// order by english
 class CompareEngDesc implements Comparator<Map<String, String>> {
 
 	@Override
@@ -217,6 +283,7 @@ class CompareEngDesc implements Comparator<Map<String, String>> {
 	}
 }
 
+// order by math
 class CompareMathDesc implements Comparator<Map<String, String>> {
 
 	@Override
@@ -226,6 +293,7 @@ class CompareMathDesc implements Comparator<Map<String, String>> {
 	}
 }
 
+// order by sum
 class CompareSumDesc implements Comparator<Map<String, String>> {
 
 	@Override

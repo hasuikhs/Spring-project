@@ -5,8 +5,8 @@ import java.util.List;
 
 public interface GradeService {
 	public List<HashMap<String, String>> readData();
-	
+
 	public List<HashMap<String, Object>> calculDataBySubject();
-	
+
 	public List<HashMap<String, String>> sort(String standard);
 }

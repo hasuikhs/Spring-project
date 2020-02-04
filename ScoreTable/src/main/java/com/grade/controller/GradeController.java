@@ -8,8 +8,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.grade.service.GradeService;
 
-
-
 @Controller
 @RequestMapping("/grade/*")
 public class GradeController {
@@ -18,8 +16,8 @@ public class GradeController {
 	private GradeService service;
 
 	@RequestMapping("/get")
-	public void grade(Model model, @RequestParam("standard") String standard) {
-		model.addAttribute("grade", service.sort(standard));
+	public void grade(Model model, @RequestParam("sort") String sort) {
+		model.addAttribute("grade", service.sort(sort));
 		model.addAttribute("summary", service.calculDataBySubject());
 	}
 }

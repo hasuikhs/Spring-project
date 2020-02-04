@@ -26,33 +26,35 @@ p {
 }
 
 .summary-tr {
-	border:10px red;
+	font-weight: bolder;
+	border-color: red;
+	background-color: #EAEAEA;
+}
+
+.green {
+	background-color: #CEF279;
+}
+
+.yellow {
+	background-color: #FAED7D;
 }
 </style>
 <title>grade</title>
 <script>
-function sort(){
-	var sort = document.getElementById("sort")
 	
-	$.ajax({
-		type : 'POST',
-		url : '',
-		data : sort
-	})
-}
 </script>
 </head>
 <body>
 	<center>
 		<p>성적</p>
-		<select name="sort" onchange="sort()">
+		<select>
 			<option value="">정렬기준</option>
 			<option value="kor">국어</option>
 			<option value="eng">영어</option>
 			<option value="math">수학</option>
 			<option value="total">합계</option>
 		</select>
-		<table border="3">
+		<table border="4">
 			<tr>
 				<th>이름</th>
 				<th>국어</th>
@@ -60,15 +62,53 @@ function sort(){
 				<th>수학</th>
 				<th>합계</th>
 				<th>평균</th>
+				<th>순위</th>
 			</tr>
+
 			<c:forEach var="map" items="${grade}">
 				<tr>
 					<td>${map.name}</td>
-					<td>${map.korean}</td>
-					<td>${map.english}</td>
-					<td>${map.math}</td>
-					<td>${map.sum}</td>
-					<td>${map.avg}</td>
+					<c:choose>
+						<c:when test="${map.korean >= summary[1].koravg}">
+							<td class="green">${map.korean}${map.korRank}</td>
+						</c:when>
+						<c:otherwise>
+							<td class="yellow">${map.korean}${map.korRank}</td>
+						</c:otherwise>
+					</c:choose>
+					<c:choose>
+						<c:when test="${map.english >= summary[1].engavg}">
+							<td class="green">${map.english}${map.engRank}</td>
+						</c:when>
+						<c:otherwise>
+							<td class="yellow">${map.english}${map.engRank}</td>
+						</c:otherwise>
+					</c:choose>
+					<c:choose>
+						<c:when test="${map.math >= summary[1].mathavg}">
+							<td class="green">${map.math}${map.mathRank}</td>
+						</c:when>
+						<c:otherwise>
+							<td class="yellow">${map.math}${map.mathRank }</td>
+						</c:otherwise>
+					</c:choose>
+					<c:choose>
+						<c:when test="${map.sum >= summary[1].sumavg}">
+							<td class="green">${map.sum}${map.sumRank}</td>
+						</c:when>
+						<c:otherwise>
+							<td class="yellow">${map.sum}${map.sumRank}</td>
+						</c:otherwise>
+					</c:choose>
+					<c:choose>
+						<c:when test="${map.avg >= summary[1].totalavg}">
+							<td class="green">${map.avg}</td>
+						</c:when>
+						<c:otherwise>
+							<td class="yellow">${map.avg}</td>
+						</c:otherwise>
+					</c:choose>
+					<td>${map.rank}</td>
 				</tr>
 			</c:forEach>
 			<tr class="summary-tr">
