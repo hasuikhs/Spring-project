@@ -7,6 +7,8 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -66,7 +68,9 @@ public class GradeServiceImpl implements GradeService {
 					Iterator<String> it = map.keySet().iterator();
 					while (it.hasNext()) {
 						String itNext = it.next();
-						gradeListByUser.get(innerCnt).merge(itNext, map.get(itNext), (v1, v2) -> map.get(itNext));
+						if (!itNext.equals("name")) {
+							gradeListByUser.get(innerCnt).merge(itNext, map.get(itNext), (v1, v2) -> map.get(itNext));
+						}
 					}
 				}
 				innerCnt++;
@@ -168,5 +172,65 @@ public class GradeServiceImpl implements GradeService {
 		return resultList;
 	}
 
+	@Override
+	public List<HashMap<String, String>> sort(String standard) {
+
+		List<HashMap<String, String>> mapList = readData();
+
+		switch (standard) {
+			case "korean":
+				Collections.sort(mapList, new CompareKorDesc());
+				break;
+			
+			case "english":
+				Collections.sort(mapList, new CompareEngDesc());
+				break;
+				
+			case "math":
+				Collections.sort(mapList, new CompareMathDesc());
+				break;
+			
+			case "sum":
+				Collections.sort(mapList, new CompareSumDesc());
+				break;
+		}
+
+		return mapList;
+	}
 }
 
+class CompareKorDesc implements Comparator<Map<String, String>> {
+
+	@Override
+	public int compare(Map<String, String> o1, Map<String, String> o2) {
+		return Integer.parseInt(o1.get("korean")) > Integer.parseInt(o2.get("korean")) ? -1
+				: Integer.parseInt(o1.get("korean")) < Integer.parseInt(o2.get("korean")) ? 1 : 0;
+	}
+}
+
+class CompareEngDesc implements Comparator<Map<String, String>> {
+
+	@Override
+	public int compare(Map<String, String> o1, Map<String, String> o2) {
+		return Integer.parseInt(o1.get("english")) > Integer.parseInt(o2.get("english")) ? -1
+				: Integer.parseInt(o1.get("english")) < Integer.parseInt(o2.get("english")) ? 1 : 0;
+	}
+}
+
+class CompareMathDesc implements Comparator<Map<String, String>> {
+
+	@Override
+	public int compare(Map<String, String> o1, Map<String, String> o2) {
+		return Integer.parseInt(o1.get("math")) > Integer.parseInt(o2.get("math")) ? -1
+				: Integer.parseInt(o1.get("math")) < Integer.parseInt(o2.get("math")) ? 1 : 0;
+	}
+}
+
+class CompareSumDesc implements Comparator<Map<String, String>> {
+
+	@Override
+	public int compare(Map<String, String> o1, Map<String, String> o2) {
+		return Integer.parseInt(o1.get("sum")) > Integer.parseInt(o2.get("sum")) ? -1
+				: Integer.parseInt(o1.get("sum")) < Integer.parseInt(o2.get("sum")) ? 1 : 0;
+	}
+}

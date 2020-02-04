@@ -24,12 +24,34 @@ td {
 p {
 	font-size: 50px;
 }
+
+.summary-tr {
+	border:10px red;
+}
 </style>
 <title>grade</title>
+<script>
+function sort(){
+	var sort = document.getElementById("sort")
+	
+	$.ajax({
+		type : 'POST',
+		url : '',
+		data : sort
+	})
+}
+</script>
 </head>
 <body>
 	<center>
 		<p>성적</p>
+		<select name="sort" onchange="sort()">
+			<option value="">정렬기준</option>
+			<option value="kor">국어</option>
+			<option value="eng">영어</option>
+			<option value="math">수학</option>
+			<option value="total">합계</option>
+		</select>
 		<table border="3">
 			<tr>
 				<th>이름</th>
@@ -49,7 +71,7 @@ p {
 					<td>${map.avg}</td>
 				</tr>
 			</c:forEach>
-			<tr>
+			<tr class="summary-tr">
 				<td>총 합계</td>
 				<td>${summary[0].korsum}</td>
 				<td>${summary[0].engsum}</td>
@@ -57,7 +79,7 @@ p {
 				<td>${summary[0].totalsum}</td>
 				<td>${summary[0].avgsum}</td>
 			</tr>
-			<tr>
+			<tr class="summary-tr">
 				<td>총 평균</td>
 				<td>${summary[1].koravg}</td>
 				<td>${summary[1].engavg}</td>
