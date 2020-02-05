@@ -16,8 +16,12 @@ public class GradeController {
 	private GradeService service;
 
 	@RequestMapping("/get")
-	public void grade(Model model, @RequestParam("sort") String sort) {
-		model.addAttribute("grade", service.sort(sort));
+	public void gradeSort(Model model, @RequestParam(value="sort", required = false) String sort) {
+		if (sort != null) {
+			model.addAttribute("grade",service.readData());
+		} else {
+			model.addAttribute("grade", service.sort(sort));
+		}
 		model.addAttribute("summary", service.calculDataBySubject());
 	}
 }

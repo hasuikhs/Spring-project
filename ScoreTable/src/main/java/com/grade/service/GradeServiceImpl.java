@@ -235,6 +235,9 @@ public class GradeServiceImpl implements GradeService {
 
 		List<HashMap<String, String>> mapList = readData();
 
+		if (sort == null) {
+			sort = "sum";
+		}
 		switch (sort) {
 		case "korean":
 			Collections.sort(mapList, new CompareKorDesc());
