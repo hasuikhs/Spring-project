@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -30,6 +31,18 @@ public class GradeServiceImpl implements GradeService {
 		calculGrade(gradeListByUser);
 
 		// korean
+		
+		// 람다를 이용한 정렬
+		gradeListByUser = gradeListByUser.stream().sorted(
+					(o1, o2) -> o2.get("sum").compareTo(o1.get("sum"))
+				).collect(Collectors.toList());
+		
+		int rank = 1;
+		for (Map<String, String> map : gradeListByUser) {
+			map.put("rank", Integer.toString(rank));
+			rank++;
+		}
+		
 		Collections.sort(gradeListByUser, new CompareKorDesc());
 		int cnt = 0;
 		for (Map<String, String> map : gradeListByUser) {
@@ -262,6 +275,7 @@ public class GradeServiceImpl implements GradeService {
 			rank++;
 		}
 
+		
 		return mapList;
 	}
 }

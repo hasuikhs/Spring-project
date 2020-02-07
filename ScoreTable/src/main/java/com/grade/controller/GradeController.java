@@ -17,7 +17,7 @@ public class GradeController {
 
 	@RequestMapping("/get")
 	public void gradeSort(Model model, @RequestParam(value="sort", required = false) String sort) {
-		if (sort != null) {
+		if (sort == null || sort.isEmpty()) {
 			model.addAttribute("grade",service.readData());
 		} else {
 			model.addAttribute("grade", service.sort(sort));

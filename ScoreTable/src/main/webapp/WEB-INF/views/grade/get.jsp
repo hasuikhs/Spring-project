@@ -33,26 +33,43 @@ p {
 
 .green {
 	background-color: #CEF279;
+	width: 70px;
+	padding-left: 10px;
 }
 
 .yellow {
 	background-color: #FAED7D;
+	width: 70px;
+	padding-left: 10px;
 }
 </style>
 <title>grade</title>
 <script>
+function sort(){
+	var sort = $("select[name=sort]").val()
 	
+	$.ajax({
+		type : "GET",
+
+		success:function(data){
+			location.replace("get?sort=" + sort);
+		},
+		error:function(){
+			alert("ERROR")
+		}
+	})
+}
 </script>
 </head>
 <body>
 	<center>
 		<p>성적</p>
-		<select>
+		<select name="sort" onchange="sort()">
 			<option value="">정렬기준</option>
-			<option value="kor">국어</option>
-			<option value="eng">영어</option>
+			<option value="korean">국어</option>
+			<option value="english">영어</option>
 			<option value="math">수학</option>
-			<option value="total">합계</option>
+			<option value="sum">합계</option>
 		</select>
 		<table border="4">
 			<tr>
@@ -64,7 +81,6 @@ p {
 				<th>평균</th>
 				<th>순위</th>
 			</tr>
-
 			<c:forEach var="map" items="${grade}">
 				<tr>
 					<td>${map.name}</td>
