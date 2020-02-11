@@ -5,10 +5,18 @@ import java.util.List;
 
 public class Node<T> {
 	private int parentNo;
-	private int childNo;
+	private int childNo; 
 	private String data;
 	private Node<T> parent;
 	private List<Node<T>> children = new ArrayList();
+		
+	public Node() {
+		super();
+	}
+
+	public Node(String data) {
+		this.data = data;
+	}
 
 	public void addChild(Node<T> node) {
 		node.setParent(this);

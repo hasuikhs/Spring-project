@@ -18,4 +18,9 @@ public class TreeController {
 	public void printTree(Model model) {
 		model.addAttribute("tree", service.printTree());
 	}
+	
+	@RequestMapping("/menu")
+	public void printMenu(Model model) {
+		model.addAttribute("menu", service.printMenu());
+	}
 }
