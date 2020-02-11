@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class TreeServiceImpl implements TreeService {
-	
+
 	@Override
 	public <T> List<Node<String>> printTree() {
 
@@ -47,7 +47,7 @@ public class TreeServiceImpl implements TreeService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return nodeList;
 	}
 
@@ -64,9 +64,9 @@ public class TreeServiceImpl implements TreeService {
 			tabs += "\t";
 		}
 		System.out.println(tabs + node.getData());
-		
+
 		List<Node<String>> children = node.getChildren();
-		
+
 		if (children.size() == 0) {
 			return;
 		}
@@ -77,40 +77,36 @@ public class TreeServiceImpl implements TreeService {
 		}
 	}
 
-	
 	@Override
 	public <T> Node<T> printMenu() {
-		
+
 		List<HashMap<String, String>> mapList = readData();
-		
+
 		Node<T> root = createTree(mapList);
-		
+
 		return root;
 	}
 
 	private <T> Node<T> createTree(List<HashMap<String, String>> mapList) {
-		Node<T> root = new Node<T>();
-		root.setChildNo(0);
-		root.setParentNo(0);
-		root.setData("메뉴");
-		
-		HashMap<Integer, Node<Map<String, String>>> hMenu = new HashMap<Integer, Node<Map<String,String>>>();
-		
+		Node<T> root = new Node<T>(0, 0, "메뉴");
+
+		HashMap<Integer, Node<Map<String, String>>> hMenu = new HashMap<Integer, Node<Map<String, String>>>();
+
 		hMenu.put(new Integer(0), (Node<Map<String, String>>) root);
-		
+
 		Iterator<HashMap<String, String>> it = mapList.iterator();
 		Node<Map<String, String>> curPNode;
 		Node<Map<String, String>> curNode;
-		
+
 		while (it.hasNext()) {
 			Map<String, String> map = it.next();
 			int pCode = Integer.parseInt(map.get("pcode"));
 			int code = Integer.parseInt(map.get("code"));
-			
+
 			curNode = new Node<Map<String, String>>(map.get("data"));
-			
+
 			hMenu.put(code, curNode);
-			
+
 			if (hMenu.containsKey(pCode)) {
 				curPNode = hMenu.get(pCode);
 				curPNode.addChild(curNode);

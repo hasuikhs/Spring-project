@@ -15,6 +15,14 @@ public class Node<T> {
 	}
 
 	public Node(String data) {
+		super();
+		this.data = data;
+	}
+
+	public Node(int parentNo, int childNo, String data) {
+		super();
+		this.parentNo = parentNo;
+		this.childNo = childNo;
 		this.data = data;
 	}
 
