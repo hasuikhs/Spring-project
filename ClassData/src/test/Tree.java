@@ -19,8 +19,6 @@ public class Tree {
 
 	private static <T> void createTree(List<HashMap<String, String>> mapList) {
 		Node<T> root = new Node<T>();
-		root.setChildNo(0);
-		root.setParentNo(0);
 		root.setData("¸Þ´º");
 		
 		HashMap<Integer, Node<Map<String, String>>> hMenu = new HashMap<Integer, Node<Map<String,String>>>();
@@ -70,6 +68,9 @@ public class Tree {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		System.out.println(mapList);
+		
 		return mapList;
 	}
 	
