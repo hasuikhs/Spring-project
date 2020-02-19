@@ -1,6 +1,7 @@
 create table reporter(
     userno int auto_increment,
     userid varchar(100),
+    name varchar(20),
     activity double,
     primary key (userno)
 ) default character set utf8 collate utf8_general_ci;
