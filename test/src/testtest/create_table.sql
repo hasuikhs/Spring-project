@@ -10,7 +10,7 @@ create table news(
     newsno int auto_increment,
     userno int,
     date date,
-    title varchar(20),
+    title varchar(200),
     content text,
     primary key (newsno),
     foreign key (userno) references reporter (userno)
