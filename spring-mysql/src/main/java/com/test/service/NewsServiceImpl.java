@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,58 +44,89 @@ public class NewsServiceImpl implements NewsService {
 		List<String> oldStrList = new ArrayList<String>();
 		List<String> newStrList = new ArrayList<String>();
 
-		int inputCnt = 1000;
-		
+		int inputCnt = 100;
+
 		titleList = preCreateNews(titleList, oldStrList, newStrList);
+
+		List<Map<String, Object>> newReporterList = createNewReporterList(inputCnt);
+
+		List<NewsVO> newsList = createRandomNewsByReporterActivity(titleList, newStrList, newReporterList);
+
+		Collections.shuffle(newsList);
+
+		// 시간(총 입력수 / 86400초)(일) 정하고 for문 리스트<뉴스VO> 돌아가면서 newsmapper.insert(뉴스VO)
+		int millisTimeOfDay = 86400000;
 		
+		int cnt = newsList.size();
+		
+		Random rand = new Random();
+		
+		int normalIntervalWriteTime = millisTimeOfDay / cnt;
+		
+		int maxIntervalRange = (int) Math.ceil(normalIntervalWriteTime * 1.2);
+		int minIntervalRange = (int) Math.floor(normalIntervalWriteTime * 0.8);
+		
+		for (NewsVO news : newsList) {
+			int intervalRange = rand.nextInt((maxIntervalRange - minIntervalRange) +1) + minIntervalRange;
+		}
+
+		System.out.println(cnt);
+	}
+
+	private List<NewsVO> createRandomNewsByReporterActivity(List<String> titleList, List<String> newStrList,
+			List<Map<String, Object>> newReporterList) {
+		Random rand = new Random();
+
+		// 리스트<뉴스VO> 만들고
+		List<NewsVO> newsList = new ArrayList<NewsVO>();
+
+		// 맵에 정해진 뉴스의 숫자별로 뉴스VO를 만들어서 리스트<뉴스VO> ADD
+		for (Map<String, Object> map : newReporterList) {
+			for (int i = 0; i <  ((Long) map.get("cntNews")).intValue(); i++) {
+				NewsVO newsvo = new NewsVO();
+				// 유저 번호
+				newsvo.setUserno((Integer) map.get("userno"));
+
+				// 제목
+				String title = titleList.get(rand.nextInt(titleList.size()));
+				newsvo.setTitle(title);
+
+				// 내용
+				int cntPara = rand.nextInt(4) + 3;
+				StringBuilder news = new StringBuilder();
+				for (int j = 0; j < cntPara; j++) {
+					StringBuilder para = new StringBuilder();
+					int cntString = rand.nextInt(4) + 3;
+					for (int k = 0; k < cntString; k++) {
+						para.append(newStrList.get(rand.nextInt(newStrList.size()))).append(" ");
+					}
+					news.append(para).append("\n");
+				}
+				newsvo.setContent(news.toString());
+				newsList.add(newsvo);
+			}
+		}
+		return newsList;
+	}
+
+	private List<Map<String, Object>> createNewReporterList(int inputCnt) {
 		List<ReporterVO> reporterList = new ArrayList<ReporterVO>();
 		reporterList = reportermapper.getList();
 		
+		
 		double sumActivity = 0;
-		for(ReporterVO vo : reporterList) {
+		for (ReporterVO vo : reporterList) {
 			sumActivity += vo.getActivity();
 		}
-		
+
 		List<Map<String, Object>> newReporterList = new ArrayList<Map<String, Object>>();
-		for(ReporterVO vo : reporterList) {
+		for (ReporterVO vo : reporterList) {
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("userno", vo.getUserno());
-			map.put("cntNews", Math.round(inputCnt * (vo.getActivity() / sumActivity) ) );
+			map.put("cntNews", Math.round(inputCnt * (vo.getActivity() / sumActivity)));
+			newReporterList.add(map);
 		}
-
-		// 리스트<뉴스VO> 만들고 
-		// 맵에 정해진 뉴스의 숫자별로 뉴스VO를 만들어서 리스트<뉴스VO> ADD
-		// 리스트<뉴스VO>를 Collections.shuffle(리스트<뉴스VO>)
-		// 시간(총 입력수 / 86400초)(일) 정하고 for문 리스트<뉴스VO> 돌아가면서 newsmapper.insert(뉴스VO)
-		
-		// 랜덤 기사 만들기
-		Random rand = new Random();
-
-		NewsVO vo = new NewsVO();
-		String title = titleList.get(rand.nextInt(titleList.size()));
-		
-		vo.setTitle(title);
-		// 랜덤 문단 수
-		// nextInt(n) : 0 ~ n-1 범위
-		int cntPara = rand.nextInt(4) + 3;
-		StringBuilder news = new StringBuilder();
-		for (int j = 0; j < cntPara; j++) {
-
-			StringBuilder para = new StringBuilder();
-
-			// 랜덤 문장 수
-			int cntString = rand.nextInt(4) + 3;
-
-			for (int k = 0; k < cntString; k++) {
-				para.append(newStrList.get(rand.nextInt(newStrList.size()))).append(" ");
-			}
-
-			news.append(para).append("\n");
-
-		}
-		vo.setContent(news.toString());
-		System.out.println(vo);
-
+		return newReporterList;
 	}
 
 	private List<String> preCreateNews(List<String> titleList, List<String> oldStrList, List<String> newStrList) {

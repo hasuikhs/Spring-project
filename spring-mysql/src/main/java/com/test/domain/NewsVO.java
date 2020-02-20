@@ -5,7 +5,7 @@ import java.util.Date;
 public class NewsVO {
 	private int newsno;
 	private int userno;
-	private Date date;
+	private String date;
 	private String title;
 	private String content;
 	
@@ -13,7 +13,7 @@ public class NewsVO {
 		super();
 	}
 
-	public NewsVO(int newsno, int userno, Date date, String title, String content) {
+	public NewsVO(int newsno, int userno, String date, String title, String content) {
 		super();
 		this.newsno = newsno;
 		this.userno = userno;
@@ -38,11 +38,11 @@ public class NewsVO {
 		this.userno = userno;
 	}
 
-	public Date getDate() {
+	public String getDate() {
 		return date;
 	}
 
-	public void setDate(Date date) {
+	public void setDate(String date) {
 		this.date = date;
 	}
 

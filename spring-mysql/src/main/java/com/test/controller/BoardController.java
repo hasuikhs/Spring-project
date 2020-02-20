@@ -11,6 +11,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.test.domain.BoardVO;
 import com.test.service.BoardService;
+import com.test.service.NewsService;
 
 import lombok.AllArgsConstructor;
 
@@ -21,10 +22,14 @@ public class BoardController {
 	
 	@Autowired
 	private BoardService service;
+	
+	@Autowired
+	private NewsService newsservice;
 
 	@GetMapping("/list")
 	public void list(Model model) {
 		model.addAttribute("list", service.getList());
+		newsservice.insert();
 	}
 	
 	@GetMapping("/register")
