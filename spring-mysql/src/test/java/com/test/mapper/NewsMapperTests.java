@@ -1,12 +1,13 @@
 package com.test.mapper;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.test.domain.NewsVO;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j;
@@ -23,4 +24,10 @@ public class NewsMapperTests {
 		mapper.getList().forEach(news -> log.info(news));
 	}
 
+	@Test
+	public void testGetStat() {
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("dateType", "m");
+		mapper.getStatistics(map).forEach(stat -> log.info(stat));
+	}
 }

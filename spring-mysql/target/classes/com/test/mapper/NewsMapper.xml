@@ -20,9 +20,47 @@
 
 	<insert id="insert">
 		/* NewsMapper.insert */
-		INSERT INTO news (userno,
-		date, title, content)
+		INSERT INTO news (userno, date, title, content)
 		VALUES (#{userno}, #{date}, #{title}, #{content})
 	</insert>
+	
+	<insert id="batchInsert" parameterType="list">
+		/* NewsMapper.batchInsert */
+		INSERT INTO news (userno, date, title, content)
+		VALUES
+			<foreach item="item" index="index" collection="list">
+				<if test="index > 0">,</if>
+				(#{item.userno}, #{item.date}, #{item.title}, #{item.content})
+			</foreach>
+	</insert>
+	
+	<select id= "getStatistics" resultType="hashMap">
+		SELECT COUNT(*), DATE_FORMAT(date,
+		<choose>
+			<when test="dateType == 'd'.toString()">
+				'%d'
+			</when>
+			<when test="dateType == 'm'.toString()">
+				'%m'
+			</when>
+			<otherwise>
+				'%H'
+			</otherwise>
+		</choose>
+		) FROM news
+		GROUP BY DATE_FORMAT(date,
+		<choose>
+			<when test="dateType == 'd'.toString()">
+				'%d'
+			</when>
+			<when test="dateType == 'm'.toString()">
+				'%m'
+			</when>
+			<otherwise>
+				'%H'
+			</otherwise>
+		</choose>
+		)
+	</select>
 
 </mapper>

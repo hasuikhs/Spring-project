@@ -12,4 +12,8 @@ public interface NewsMapper {
 	public Map<String, Object> get(int newsno);
 
 	public void insert(NewsVO news);
+	
+	public void batchInsert(List<NewsVO> list) throws Exception;
+	
+	public List<Map<String, Object>> getStatistics(Map<String, String> date);
 }
