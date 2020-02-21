@@ -4,13 +4,18 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.springframework.stereotype.Service;
 
@@ -44,7 +49,7 @@ public class NewsServiceImpl implements NewsService {
 		List<String> oldStrList = new ArrayList<String>();
 		List<String> newStrList = new ArrayList<String>();
 
-		int inputCnt = 100;
+		int inputCnt = 10000;
 
 		titleList = preCreateNews(titleList, oldStrList, newStrList);
 
@@ -54,23 +59,67 @@ public class NewsServiceImpl implements NewsService {
 
 		Collections.shuffle(newsList);
 
-		// 시간(총 입력수 / 86400초)(일) 정하고 for문 리스트<뉴스VO> 돌아가면서 newsmapper.insert(뉴스VO)
+		int year = 2020;
+		int month = 2;
+		int date = 21;
+		int hour = 11;
+		int minute = 22;
+				
+		SimpleDateFormat fmtDate = setDateOfNews(newsList, year, month, date, hour, minute);
+
+		Timer timer = new Timer();
+
+		for (NewsVO news : newsList) {
+			try {
+				Date newsDate = fmtDate.parse(news.getDate());
+
+				TimerTask task = new TimerTask() {
+					@Override
+					public void run() {
+						System.out.println("insert data " + news.toString());
+						newsmapper.insert(news);
+					}
+				};
+
+				timer.schedule(task, newsDate);
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private SimpleDateFormat setDateOfNews(List<NewsVO> newsList, int year, int month, int date, int hour, int minute) {
+		Date setDate = new Date();
+		setDate.setYear(year - 1900);
+		setDate.setMonth(month - 1);
+		setDate.setDate(date);
+		setDate.setHours(hour);
+		setDate.setMinutes(minute);
+
 		int millisTimeOfDay = 86400000;
-		
+
 		int cnt = newsList.size();
-		
+
 		Random rand = new Random();
-		
+
 		int normalIntervalWriteTime = millisTimeOfDay / cnt;
-		
+
 		int maxIntervalRange = (int) Math.ceil(normalIntervalWriteTime * 1.2);
 		int minIntervalRange = (int) Math.floor(normalIntervalWriteTime * 0.8);
-		
-		for (NewsVO news : newsList) {
-			int intervalRange = rand.nextInt((maxIntervalRange - minIntervalRange) +1) + minIntervalRange;
-		}
 
-		System.out.println(cnt);
+		SimpleDateFormat fmtDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+
+		long sumInterval = 0;
+		for (NewsVO news : newsList) {
+			int intervalRange = rand.nextInt((maxIntervalRange - minIntervalRange) + 1) + minIntervalRange;
+			sumInterval += intervalRange;
+			long setTime = setDate.getTime() + sumInterval;
+			Date writeDate = new Date();
+			writeDate.setTime(setTime);
+			news.setDate(fmtDate.format(writeDate));
+
+		}
+		return fmtDate;
 	}
 
 	private List<NewsVO> createRandomNewsByReporterActivity(List<String> titleList, List<String> newStrList,
@@ -82,7 +131,7 @@ public class NewsServiceImpl implements NewsService {
 
 		// 맵에 정해진 뉴스의 숫자별로 뉴스VO를 만들어서 리스트<뉴스VO> ADD
 		for (Map<String, Object> map : newReporterList) {
-			for (int i = 0; i <  ((Long) map.get("cntNews")).intValue(); i++) {
+			for (int i = 0; i < ((Long) map.get("cntNews")).intValue(); i++) {
 				NewsVO newsvo = new NewsVO();
 				// 유저 번호
 				newsvo.setUserno((Integer) map.get("userno"));
@@ -112,8 +161,7 @@ public class NewsServiceImpl implements NewsService {
 	private List<Map<String, Object>> createNewReporterList(int inputCnt) {
 		List<ReporterVO> reporterList = new ArrayList<ReporterVO>();
 		reporterList = reportermapper.getList();
-		
-		
+
 		double sumActivity = 0;
 		for (ReporterVO vo : reporterList) {
 			sumActivity += vo.getActivity();
@@ -195,4 +243,5 @@ public class NewsServiceImpl implements NewsService {
 		titleList = Arrays.asList(titles.split("\\n"));
 		return titleList;
 	}
+
 }
