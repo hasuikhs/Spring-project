@@ -9,7 +9,7 @@ create table reporter(
 create table news(
     newsno int auto_increment,
     userno int,
-    date date,
+    date datetime(3),
     title varchar(200),
     content text,
     primary key (newsno),
