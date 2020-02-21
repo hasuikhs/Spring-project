@@ -18,7 +18,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
 
+import com.test.domain.GlobalDefine;
 import com.test.domain.NewsVO;
 import com.test.domain.ReporterVO;
 import com.test.mapper.NewsMapper;
@@ -49,7 +51,7 @@ public class NewsServiceImpl implements NewsService {
 		List<String> oldStrList = new ArrayList<String>();
 		List<String> newStrList = new ArrayList<String>();
 
-		int inputCnt = 10000;
+		int inputCnt = 1000000;
 
 		titleList = preCreateNews(titleList, oldStrList, newStrList);
 
@@ -61,30 +63,59 @@ public class NewsServiceImpl implements NewsService {
 
 		int year = 2020;
 		int month = 2;
-		int date = 21;
-		int hour = 11;
-		int minute = 22;
+		int date = 23;
+		int hour = 17;
+		int minute = 10;
 				
 		SimpleDateFormat fmtDate = setDateOfNews(newsList, year, month, date, hour, minute);
+		
+		int batch = 1000;
+		
+		autoInsertBatch(newsList, fmtDate, batch);
+	}
 
+	private void autoInsertBatch(List<NewsVO> newsList, SimpleDateFormat fmtDate, int batch) {
 		Timer timer = new Timer();
-
-		for (NewsVO news : newsList) {
+		
+		int sizeOfListOfList = newsList.size() / batch;
+		
+		List<List<NewsVO>> separatedNewsList = new ArrayList<List<NewsVO>>();
+		for (int i = 0; i < sizeOfListOfList; i++) {
+			separatedNewsList.add(newsList.subList(i * batch, (i + 1) * batch));
+		}
+		
+//		for(List<NewsVO> batchNews : separatedNewsList) {
+//			try {
+//				Date newsDate = fmtDate.parse(batchNews.get(batchNews.size() - 1).getDate());
+//				String testTitle  = batchNews.get(batchNews.size() - 1).getTitle();
+//				TimerTask task = new TimerTask() {
+//					@Override
+//					public void run() {
+//						try {
+//							System.out.println("累己老 : " + newsDate + ", 力格 : " + testTitle);
+//							newsmapper.batchInsert(batchNews);
+//							
+//						} catch (Exception e) {
+//							e.printStackTrace();
+//						}
+//					}
+//				};
+//				timer.schedule(task, newsDate);
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//		}
+		long start = System.currentTimeMillis();
+		int cnt = 0;
+		for (List<NewsVO> batchNews : separatedNewsList) {
+			System.out.println(cnt);
 			try {
-				Date newsDate = fmtDate.parse(news.getDate());
-
-				TimerTask task = new TimerTask() {
-					@Override
-					public void run() {
-						System.out.println("insert data " + news.toString());
-						newsmapper.insert(news);
-					}
-				};
-
-				timer.schedule(task, newsDate);
-			} catch (ParseException e) {
+				newsmapper.batchInsert(batchNews);
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			cnt++;
+			System.out.println(System.currentTimeMillis()-start);
 		}
 	}
 

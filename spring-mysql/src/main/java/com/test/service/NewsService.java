@@ -10,4 +10,5 @@ public interface NewsService {
 	public Map<String, Object> get(int newsno);
 
 	public void insert();
+	
 }
