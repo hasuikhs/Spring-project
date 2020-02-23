@@ -4,7 +4,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,12 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Timer;
-import java.util.TimerTask;
 
 import org.springframework.stereotype.Service;
-import org.springframework.util.StopWatch;
 
-import com.test.domain.GlobalDefine;
 import com.test.domain.NewsVO;
 import com.test.domain.ReporterVO;
 import com.test.mapper.NewsMapper;
@@ -43,6 +39,11 @@ public class NewsServiceImpl implements NewsService {
 	@Override
 	public Map<String, Object> get(int newsno) {
 		return newsmapper.get(newsno);
+	}
+	
+	@Override
+	public List<Map<String, Object>> getStatistics(String dateType){
+		return newsmapper.getStatistics(dateType); 
 	}
 
 	@Override
@@ -84,27 +85,6 @@ public class NewsServiceImpl implements NewsService {
 			separatedNewsList.add(newsList.subList(i * batch, (i + 1) * batch));
 		}
 		
-//		for(List<NewsVO> batchNews : separatedNewsList) {
-//			try {
-//				Date newsDate = fmtDate.parse(batchNews.get(batchNews.size() - 1).getDate());
-//				String testTitle  = batchNews.get(batchNews.size() - 1).getTitle();
-//				TimerTask task = new TimerTask() {
-//					@Override
-//					public void run() {
-//						try {
-//							System.out.println("累己老 : " + newsDate + ", 力格 : " + testTitle);
-//							newsmapper.batchInsert(batchNews);
-//							
-//						} catch (Exception e) {
-//							e.printStackTrace();
-//						}
-//					}
-//				};
-//				timer.schedule(task, newsDate);
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
-//		}
 		long start = System.currentTimeMillis();
 		int cnt = 0;
 		for (List<NewsVO> batchNews : separatedNewsList) {

@@ -1,8 +1,5 @@
 package com.test.mapper;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +23,7 @@ public class NewsMapperTests {
 
 	@Test
 	public void testGetStat() {
-		Map<String, String> map = new HashMap<String, String>();
-		map.put("dateType", "m");
-		mapper.getStatistics(map).forEach(stat -> log.info(stat));
+		String dateType = "m";
+		mapper.getStatistics(dateType).forEach(stat -> log.info(stat));
 	}
 }

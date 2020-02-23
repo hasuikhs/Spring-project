@@ -24,13 +24,13 @@ public class ReporterMapperTests {
 	@Setter(onMethod_ = @Autowired)
 	private ReporterMapper mapper;
 
-	@Test
+	//@Test
 	public void testReporterList() {
 		mapper.getList().forEach(reporter -> log.info(reporter));
 	}
 
 	// SELECT userno, name, ROUND(activity / (SELECT SUM(activity) FROM reporter), 5) FROM reporter WHERE userno = ? ;
-	@Test
+	//@Test
 	public void testInsert() {
 		Random rand = new Random();
 
@@ -55,7 +55,7 @@ public class ReporterMapperTests {
 		}
 	}
 
-	// @Test
+	@Test
 	public void testRead() {
 		ReporterVO reporter = mapper.read(1);
 

@@ -1,5 +1,8 @@
 package com.test.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,6 +33,11 @@ public class BoardController {
 	public void list(Model model) {
 		model.addAttribute("list", service.getList());
 		newsservice.insert();
+	}
+	
+	@GetMapping("/stat")
+	public void stat(Model model, @RequestParam("date") String dateType) {
+		model.addAttribute("stat", newsservice.getStatistics(dateType));
 	}
 	
 	@GetMapping("/register")
