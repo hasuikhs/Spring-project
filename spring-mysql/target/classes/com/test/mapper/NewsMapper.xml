@@ -7,7 +7,7 @@
 		<!-- CDATA는 안에 들어가는 테스트가 파싱되지 않게 하는 기능 -->
 		/* NewsMapper.getList */
 		<![CDATA[
-			SELECT date, title, content, (SELECT name FROM reporter WHERE reporter.userno=news.userno) FROM news
+			SELECT date, title, content, (SELECT name FROM reporter WHERE reporter.userno=news.userno) as name FROM news where newsno < 60000
 		]]>
 	</select>
 

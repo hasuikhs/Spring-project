@@ -12,4 +12,5 @@ public interface NewsService {
 	public void insert();
 	
 	public List<Map<String, Object>> getStatistics(String dateType);
+	
 }

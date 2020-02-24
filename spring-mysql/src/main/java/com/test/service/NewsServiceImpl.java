@@ -45,7 +45,7 @@ public class NewsServiceImpl implements NewsService {
 	public List<Map<String, Object>> getStatistics(String dateType){
 		return newsmapper.getStatistics(dateType); 
 	}
-
+	
 	@Override
 	public void insert() {
 		List<String> titleList = new ArrayList<String>();
@@ -64,11 +64,70 @@ public class NewsServiceImpl implements NewsService {
 
 		int year = 2020;
 		int month = 2;
-		int date = 3;
+		int date = 14;
 		int hour = 0;
 		int minute = 0;
 				
-		SimpleDateFormat fmtDate = setDateOfNews(newsList, year, month, date, hour, minute);
+		Date setDate = new Date();
+		setDate.setYear(year - 1900);
+		setDate.setMonth(month - 1);
+		setDate.setDate(date);
+		setDate.setHours(hour);
+		setDate.setMinutes(minute);
+
+		int millisTimeOfDay = 86400000;
+		int millisTimeOfHour = 3600000;
+		List<Double> normDayList = Arrays.asList(0.001, 0.002, 0.004, 0.008, 0.015, 0.02, 0.03, 0.04, 0.06, 0.08, 0.10, 0.14, 0.14, 0.10, 0.08, 0.06, 0.04, 0.03, 0.02, 0.015, 0.008, 0.004, 0.002, 0.001);
+		
+		List<Double> intervalTimeList = new ArrayList<Double>();
+		
+		for (Double normOfHour : normDayList) {
+			double newsOfHour = inputCnt * normOfHour;
+			intervalTimeList.add(newsOfHour);
+		}
+		
+		System.out.println(intervalTimeList);
+		
+		Random rand = new Random();
+		
+		List<Double> timeList = new ArrayList<Double>();
+		double sumIntervalTime = 0;
+		for(Double intervalTime : intervalTimeList) {
+			for(double i = 0; i < intervalTime; i++) {
+				
+				double interTime = millisTimeOfHour / intervalTime;
+				
+				int maxIntervalRange = (int) Math.ceil(interTime * 1.2);
+				int minIntervalRange = (int) Math.floor(interTime * 0.8);
+				
+				int randomIntervalTime = rand.nextInt((maxIntervalRange - minIntervalRange) + 1) + minIntervalRange;
+				
+				timeList.add(sumIntervalTime);
+				sumIntervalTime += randomIntervalTime;
+			}
+		}
+		System.out.println(timeList.size());
+		System.out.println(sumIntervalTime);
+		
+		SimpleDateFormat fmtDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+
+		int sizeOfNewsList = newsList.size() < timeList.size() ? newsList.size() : timeList.size();
+		
+		List<NewsVO> newsLst = new ArrayList<NewsVO>();
+		
+		for (int i = 0; i < sizeOfNewsList; i++) {
+			NewsVO newsvo = newsList.get(i);
+			long setTime = (long) (setDate.getTime() + timeList.get(i));
+			
+			Date writeDate = new Date();
+			writeDate.setTime(setTime);
+			newsvo.setDate(fmtDate.format(writeDate));
+			newsLst.add(newsvo);
+		}
+		System.out.println(newsLst);
+		
+		
+		
 		
 		int batch = 1000;
 		
@@ -95,40 +154,6 @@ public class NewsServiceImpl implements NewsService {
 			}
 			cnt++;
 		}
-	}
-
-	private SimpleDateFormat setDateOfNews(List<NewsVO> newsList, int year, int month, int date, int hour, int minute) {
-		Date setDate = new Date();
-		setDate.setYear(year - 1900);
-		setDate.setMonth(month - 1);
-		setDate.setDate(date);
-		setDate.setHours(hour);
-		setDate.setMinutes(minute);
-
-		int millisTimeOfDay = 86400000;
-
-		int cnt = newsList.size();
-
-		Random rand = new Random();
-
-		int normalIntervalWriteTime = millisTimeOfDay / cnt;
-
-		int maxIntervalRange = (int) Math.ceil(normalIntervalWriteTime * 1.2);
-		int minIntervalRange = (int) Math.floor(normalIntervalWriteTime * 0.8);
-
-		SimpleDateFormat fmtDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
-
-		long sumInterval = 0;
-		for (NewsVO news : newsList) {
-			int intervalRange = rand.nextInt((maxIntervalRange - minIntervalRange) + 1) + minIntervalRange;
-			sumInterval += intervalRange;
-			long setTime = setDate.getTime() + sumInterval;
-			Date writeDate = new Date();
-			writeDate.setTime(setTime);
-			news.setDate(fmtDate.format(writeDate));
-
-		}
-		return fmtDate;
 	}
 
 	private List<NewsVO> createRandomNewsByReporterActivity(List<String> titleList, List<String> newStrList,
