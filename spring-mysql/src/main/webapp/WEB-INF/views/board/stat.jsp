@@ -34,6 +34,7 @@
 			<option value="m">월</option>
 			<option value="h">시</option>
 		</select>
+		
 		<br>
 		<table border="3">
 			<tr>
