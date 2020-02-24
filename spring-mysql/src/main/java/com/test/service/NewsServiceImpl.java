@@ -52,7 +52,7 @@ public class NewsServiceImpl implements NewsService {
 		List<String> oldStrList = new ArrayList<String>();
 		List<String> newStrList = new ArrayList<String>();
 
-		int inputCnt = 1000000;
+		int inputCnt = 100000;
 
 		titleList = preCreateNews(titleList, oldStrList, newStrList);
 
@@ -64,9 +64,9 @@ public class NewsServiceImpl implements NewsService {
 
 		int year = 2020;
 		int month = 2;
-		int date = 23;
-		int hour = 17;
-		int minute = 10;
+		int date = 3;
+		int hour = 0;
+		int minute = 0;
 				
 		SimpleDateFormat fmtDate = setDateOfNews(newsList, year, month, date, hour, minute);
 		
@@ -85,7 +85,6 @@ public class NewsServiceImpl implements NewsService {
 			separatedNewsList.add(newsList.subList(i * batch, (i + 1) * batch));
 		}
 		
-		long start = System.currentTimeMillis();
 		int cnt = 0;
 		for (List<NewsVO> batchNews : separatedNewsList) {
 			System.out.println(cnt);
@@ -95,7 +94,6 @@ public class NewsServiceImpl implements NewsService {
 				e.printStackTrace();
 			}
 			cnt++;
-			System.out.println(System.currentTimeMillis()-start);
 		}
 	}
 

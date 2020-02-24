@@ -9,9 +9,10 @@ create table reporter(
 create table news(
     newsno int auto_increment,
     userno int,
-    date datetime(3),
+    date timestamp(3),
     title varchar(200),
     content text,
     primary key (newsno),
-    foreign key (userno) references reporter (userno)
+    foreign key (userno) references reporter (userno),
+    INDEX idx_date (date)
 ) default character set utf8 collate utf8_general_ci;

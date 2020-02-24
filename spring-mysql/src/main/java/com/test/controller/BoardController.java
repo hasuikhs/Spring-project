@@ -36,7 +36,7 @@ public class BoardController {
 	}
 	
 	@GetMapping("/stat")
-	public void stat(Model model, @RequestParam("date") String dateType) {
+	public void stat(Model model, @RequestParam(value="date", required=false) String dateType) {
 		model.addAttribute("stat", newsservice.getStatistics(dateType));
 	}
 	

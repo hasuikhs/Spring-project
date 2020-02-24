@@ -35,7 +35,7 @@
 	</insert>
 	
 	<select id= "getStatistics" resultType="hashMap">
-		SELECT COUNT(*), DATE_FORMAT(date,
+		SELECT COUNT(*) as cnt, DATE_FORMAT(date,
 		<choose>
 			<when test="dateType == 'd'.toString()">
 				'%d'
@@ -47,8 +47,20 @@
 				'%H'
 			</otherwise>
 		</choose>
-		) FROM news
+		) as stat FROM news
 		GROUP BY DATE_FORMAT(date,
+		<choose>
+			<when test="dateType == 'd'.toString()">
+				'%d'
+			</when>
+			<when test="dateType == 'm'.toString()">
+				'%m'
+			</when>
+			<otherwise>
+				'%H'
+			</otherwise>
+		</choose>
+		) ORDER BY DATE_FORMAT(date,
 		<choose>
 			<when test="dateType == 'd'.toString()">
 				'%d'
