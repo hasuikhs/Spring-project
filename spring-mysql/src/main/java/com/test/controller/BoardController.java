@@ -2,9 +2,12 @@ package com.test.controller;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -28,7 +31,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.test.domain.BoardVO;
-import com.test.domain.NewsVO;
 import com.test.service.BoardService;
 import com.test.service.NewsService;
 
@@ -152,6 +154,15 @@ public class BoardController {
 	@GetMapping("/excelstat")
 	public void toExcel(HttpServletResponse response, @RequestParam("date") String dateType) {
 		List<Map<String, Object>> mapList = newsservice.getStatistics(dateType);
+		
+		long sum = 0;
+		for(Map<String, Object> map : mapList) {
+			sum += Long.parseLong(map.get("cnt").toString());
+		}
+		Map<String, Long> statMap = new HashMap<String, Long>();
+		statMap.put("sum", sum);
+		statMap.put("avg", sum/mapList.size());
+		
 		try {
 			// 况农合 积己
 			Workbook wb = new HSSFWorkbook();
@@ -202,7 +213,20 @@ public class BoardController {
 				cell.setCellStyle(bodyStyle);
 				cell.setCellValue(Double.parseDouble(map.get("cnt").toString()));
 			}
-
+			
+			Iterator<String> mapIt = statMap.keySet().iterator();
+			
+			while (mapIt.hasNext()) {
+				String str = mapIt.next().toString();
+				row = sheet.createRow(rowNo++);
+				cell = row.createCell(0);
+				cell.setCellStyle(bodyStyle);
+				cell.setCellValue(str);
+				cell = row.createCell(1);
+				cell.setCellStyle(bodyStyle);
+				cell.setCellValue(statMap.get(str));
+			}
+			
 			// 牧刨明 鸥涝苞 颇老疙 瘤沥
 			response.setContentType("ms-vnd/excel");
 			response.setHeader("Content-Disposition", "attachment;filename=test.xls");
