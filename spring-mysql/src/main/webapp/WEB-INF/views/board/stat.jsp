@@ -19,32 +19,17 @@ td {
 #stat-div {
 	float: left;
 	width: 15%;
-	padding-left : 50px;
+	padding-left: 50px;
 	height: 600px;
 }
 
 #chart-div {
 	float: right;
 	width: 80%;
-	height : 600px;
+	height: 600px;
 }
 </style>
 <title>stat</title>
-<script>
-	function stat() {
-		var dateType = $("select[name=stat]").val()
-		$.ajax({
-			type : "GET",
-
-			success : function(data) {
-				location.replace("stat?date=" + dateType);
-			},
-			error : function() {
-				alert("ERROR")
-			}
-		})
-	}
-</script>
 <!-- stylesheet -->
 <link rel="stylesheet"
 	href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.11/c3.min.css" />
@@ -93,19 +78,75 @@ td {
 			</tr>
 		</table>
 	</div>
+	<select name="chartType" onchange="showchart()">
+		<option value="">차트 선택</option>
+		<option value="area-spline" selected="selected">라인</option>
+		<option value="bar">막대</option>
+		<option value="pie">원형</option>
+	</select>
 	<div id="chart-div"></div>
 
 	<script>
-		var chart = c3.generate({
-			bindto : '#chart-div',
-			data : {
-				x: 'x',
-				columns : [ ${x}, ${chartdata} ],
-				types : {
-					개수: 'area-spline'
-				}
+	
+	function stat() {
+		var dateType = $("select[name=stat]").val()
+		var chartType = $("select[name=chartType]").val()
+		$.ajax({
+			type : "GET",
+
+			success : function(data) {
+				location.replace("stat?date=" + dateType + "&chart=" + chartType)
+			},
+			error : function() {
+				alert("ERROR")
 			}
 		})
+	}
+	
+	function showchart() {
+		var dateType = $("select[name=stat]").val()
+		var chartType = $("select[name=chartType]").val()
+		$.ajax({
+			type : "GET",
+			
+			success : function(data){
+				
+				c3.generate({
+					bindto : '#chart-div',
+					data : {
+						x: 'x',
+						columns : [
+							${x},
+							${chartdata}
+						],
+						types : {
+							개수 : chartType
+						}
+					}
+				})
+			},
+			error : function(data) {
+				alert("error")
+			}
+			
+		})
+	} 
+	var chartType = $("select[name=chartType]").val()
+	var chart = c3.generate({
+		
+		bindto : '#chart-div',
+		data : {
+			x: 'x',
+			columns : [ 
+				${x}, 
+				${chartdata} 
+			],
+			types : {
+				개수: chartType
+			}
+		}
+	})
+	
 	</script>
 
 </body>

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Timer;
+import java.util.TimerTask;
 
 import org.springframework.stereotype.Service;
 
@@ -40,12 +41,12 @@ public class NewsServiceImpl implements NewsService {
 	public Map<String, Object> get(int newsno) {
 		return newsmapper.get(newsno);
 	}
-	
+
 	@Override
-	public List<Map<String, Object>> getStatistics(String dateType){
-		return newsmapper.getStatistics(dateType); 
+	public List<Map<String, Object>> getStatistics(String dateType) {
+		return newsmapper.getStatistics(dateType);
 	}
-	
+
 	@Override
 	public void insert() {
 		List<String> titleList = new ArrayList<String>();
@@ -62,97 +63,131 @@ public class NewsServiceImpl implements NewsService {
 
 		Collections.shuffle(newsList);
 
+		List<Double> usingInternetWeekList = Arrays.asList(0.129, 0.155, 0.143, 0.164, 0.164, 0.129, 0.116); // 일월화수목금토
+
 		int year = 2020;
 		int month = 2;
-		int date = 14;
+		int date = 18;
 		int hour = 0;
 		int minute = 0;
-				
+
+		for (; date < 25; date++) {
+
+			Date tempDate = new Date();
+			tempDate.setDate(date);
+			int cnt = (int) (inputCnt * usingInternetWeekList.get(tempDate.getDay()));
+
+			Date setDate = setDate(year, month, date, hour, minute);
+
+			List<Double> timeList = createTimeList(cnt);
+
+			SimpleDateFormat fmtDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+
+			int sizeOfNewsList = newsList.size() < timeList.size() ? newsList.size() : timeList.size();
+
+			List<NewsVO> newsLst = createFinalData(newsList, setDate, timeList, fmtDate, sizeOfNewsList);
+
+			int batch = 100;
+
+			autoInsertBatch(newsLst, fmtDate, batch);
+		}
+	}
+
+	private List<Double> createTimeList(int cnt) {
+		int millisTimeOfHour = 3600000;
+
+		List<Double> usingInternetDayList = Arrays.asList(0.0424, 0.0322, 0.0213, 0.0172, 0.0149, 0.0131, 0.013, 0.0167,
+				0.024, 0.04, 0.0447, 0.0474, 0.0459, 0.0487, 0.0471, 0.0569, 0.0675, 0.0711, 0.0596, 0.0555, 0.0499,
+				0.0557, 0.0566, 0.0586);
+
+		List<Double> intervalTimeList = new ArrayList<Double>();
+
+		for (Double normOfHour : usingInternetDayList) {
+			double newsOfHour = cnt * normOfHour;
+			intervalTimeList.add(newsOfHour);
+		}
+
+		Random rand = new Random();
+
+		List<Double> timeList = new ArrayList<Double>();
+		double sumIntervalTime = 0;
+		for (Double intervalTime : intervalTimeList) {
+			for (double i = 0; i < intervalTime; i++) {
+
+				double interTime = millisTimeOfHour / intervalTime;
+
+				int maxIntervalRange = (int) Math.ceil(interTime * 1.2);
+				int minIntervalRange = (int) Math.floor(interTime * 0.8);
+
+				int randomIntervalTime = rand.nextInt((maxIntervalRange - minIntervalRange) + 1) + minIntervalRange;
+
+				timeList.add(sumIntervalTime);
+				sumIntervalTime += randomIntervalTime;
+			}
+		}
+		return timeList;
+	}
+
+	private Date setDate(int year, int month, int date, int hour, int minute) {
 		Date setDate = new Date();
 		setDate.setYear(year - 1900);
 		setDate.setMonth(month - 1);
 		setDate.setDate(date);
 		setDate.setHours(hour);
 		setDate.setMinutes(minute);
+		return setDate;
+	}
 
-		int millisTimeOfDay = 86400000;
-		int millisTimeOfHour = 3600000;
-		List<Double> normDayList = Arrays.asList(0.001, 0.002, 0.004, 0.008, 0.015, 0.02, 0.03, 0.04, 0.06, 0.08, 0.10, 0.14, 0.14, 0.10, 0.08, 0.06, 0.04, 0.03, 0.02, 0.015, 0.008, 0.004, 0.002, 0.001);
-		
-		List<Double> intervalTimeList = new ArrayList<Double>();
-		
-		for (Double normOfHour : normDayList) {
-			double newsOfHour = inputCnt * normOfHour;
-			intervalTimeList.add(newsOfHour);
-		}
-		
-		System.out.println(intervalTimeList);
-		
-		Random rand = new Random();
-		
-		List<Double> timeList = new ArrayList<Double>();
-		double sumIntervalTime = 0;
-		for(Double intervalTime : intervalTimeList) {
-			for(double i = 0; i < intervalTime; i++) {
-				
-				double interTime = millisTimeOfHour / intervalTime;
-				
-				int maxIntervalRange = (int) Math.ceil(interTime * 1.2);
-				int minIntervalRange = (int) Math.floor(interTime * 0.8);
-				
-				int randomIntervalTime = rand.nextInt((maxIntervalRange - minIntervalRange) + 1) + minIntervalRange;
-				
-				timeList.add(sumIntervalTime);
-				sumIntervalTime += randomIntervalTime;
-			}
-		}
-		System.out.println(timeList.size());
-		System.out.println(sumIntervalTime);
-		
-		SimpleDateFormat fmtDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
-
-		int sizeOfNewsList = newsList.size() < timeList.size() ? newsList.size() : timeList.size();
-		
+	private List<NewsVO> createFinalData(List<NewsVO> newsList, Date setDate, List<Double> timeList,
+			SimpleDateFormat fmtDate, int sizeOfNewsList) {
 		List<NewsVO> newsLst = new ArrayList<NewsVO>();
-		
+
 		for (int i = 0; i < sizeOfNewsList; i++) {
 			NewsVO newsvo = newsList.get(i);
 			long setTime = (long) (setDate.getTime() + timeList.get(i));
-			
+
 			Date writeDate = new Date();
 			writeDate.setTime(setTime);
 			newsvo.setDate(fmtDate.format(writeDate));
 			newsLst.add(newsvo);
 		}
-		System.out.println(newsLst);
-		
-		
-		
-		
-		int batch = 1000;
-		
-		autoInsertBatch(newsList, fmtDate, batch);
+		return newsLst;
 	}
 
 	private void autoInsertBatch(List<NewsVO> newsList, SimpleDateFormat fmtDate, int batch) {
 		Timer timer = new Timer();
-		
+
 		int sizeOfListOfList = newsList.size() / batch;
-		
 		List<List<NewsVO>> separatedNewsList = new ArrayList<List<NewsVO>>();
 		for (int i = 0; i < sizeOfListOfList; i++) {
+			System.out.println(separatedNewsList.size());
+			
 			separatedNewsList.add(newsList.subList(i * batch, (i + 1) * batch));
 		}
-		
-		int cnt = 0;
+
+		System.out.println(separatedNewsList.size());
+
 		for (List<NewsVO> batchNews : separatedNewsList) {
-			System.out.println(cnt);
 			try {
 				newsmapper.batchInsert(batchNews);
+//				Date newsDate = fmtDate.parse(batchNews.get(batchNews.size() - 1).getDate());
+//				
+//				TimerTask task = new TimerTask() {
+//					@Override
+//					public void run() {
+//						try {
+//							newsmapper.batchInsert(batchNews);
+//						} catch (Exception e) {
+//							e.printStackTrace();
+//						}
+//					}
+//				};
+//				
+//				timer.schedule(task, newsDate);
+				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			cnt++;
 		}
 	}
 
