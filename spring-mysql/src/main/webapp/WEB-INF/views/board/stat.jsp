@@ -95,7 +95,7 @@ td {
 			type : "GET",
 
 			success : function(data) {
-				location.replace("stat?date=" + dateType + "&chart=" + chartType)
+				location.replace("stat?date=" + dateType)
 			},
 			error : function() {
 				alert("ERROR")
@@ -132,7 +132,7 @@ td {
 		})
 	} 
 	var chartType = $("select[name=chartType]").val()
-	var chart = c3.generate({
+	c3.generate({
 		
 		bindto : '#chart-div',
 		data : {

@@ -53,7 +53,7 @@ public class NewsServiceImpl implements NewsService {
 		List<String> oldStrList = new ArrayList<String>();
 		List<String> newStrList = new ArrayList<String>();
 
-		int inputCnt = 100000;
+		int inputCnt = 10000;
 
 		titleList = preCreateNews(titleList, oldStrList, newStrList);
 
@@ -65,14 +65,14 @@ public class NewsServiceImpl implements NewsService {
 
 		List<Double> usingInternetWeekList = Arrays.asList(0.129, 0.155, 0.143, 0.164, 0.164, 0.129, 0.116); // 일월화수목금토
 
-		int year = 2020;
-		int month = 2;
-		int date = 18;
+		int year = 2019;
+		int month = 1;
+		int date = 1;
 		int hour = 0;
 		int minute = 0;
 
-		for (; date < 25; date++) {
-
+		for (; date <= 365; date++) {
+			System.out.println("일" + date);
 			Date tempDate = new Date();
 			tempDate.setDate(date);
 			int cnt = (int) (inputCnt * usingInternetWeekList.get(tempDate.getDay()));
@@ -160,13 +160,8 @@ public class NewsServiceImpl implements NewsService {
 		int sizeOfListOfList = newsList.size() / batch;
 		List<List<NewsVO>> separatedNewsList = new ArrayList<List<NewsVO>>();
 		for (int i = 0; i < sizeOfListOfList; i++) {
-			System.out.println(separatedNewsList.size());
-			
 			separatedNewsList.add(newsList.subList(i * batch, (i + 1) * batch));
 		}
-
-		System.out.println(separatedNewsList.size());
-
 		for (List<NewsVO> batchNews : separatedNewsList) {
 			try {
 				newsmapper.batchInsert(batchNews);
