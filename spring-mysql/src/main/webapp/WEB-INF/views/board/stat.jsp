@@ -85,7 +85,6 @@ td {
 		<option value="pie">원형</option>
 	</select>
 	<div id="chart-div"></div>
-
 	<script>
 	
 	function stat() {
@@ -110,43 +109,48 @@ td {
 			type : "GET",
 			
 			success : function(data){
-				
-				c3.generate({
-					bindto : '#chart-div',
-					data : {
-						x: 'x',
-						columns : [
-							${x},
-							${chartdata}
-						],
-						types : {
-							개수 : chartType
+				if (chartType != 'pie'){
+					c3.generate({
+						bindto : '#chart-div',
+						data : {
+							columns : [
+								${chartdata}
+							],
+							types : {
+								개수 : chartType
+							}
 						}
-					}
-				})
+					})
+				} else {
+					c3.generate({
+						bindto : '#chart-div',
+						data : {
+							columns : ${piedata},
+							type : chartType
+						}
+					})
+				}
 			},
 			error : function(data) {
 				alert("error")
 			}
 			
 		})
-	} 
+	}
 	var chartType = $("select[name=chartType]").val()
 	c3.generate({
 		
 		bindto : '#chart-div',
 		data : {
-			x: 'x',
 			columns : [ 
-				${x}, 
 				${chartdata} 
 			],
 			types : {
 				개수: chartType
 			}
 		}
-	})
-	
+	}) 
+
 	</script>
 
 </body>

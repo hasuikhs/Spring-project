@@ -59,13 +59,17 @@ public class BoardController {
 		
 		long sum = 0;
 		List<Object> cntList = new ArrayList<Object>();
-		List<Object> xList = new ArrayList<Object>();
-		xList.add("'x'");
+		List<List<Object>> pieDataList = new ArrayList<List<Object>>();
 		cntList.add("'°³¼ö'");
+		
 		for(Map<String, Object> map : mapList) {
-			xList.add(map.get("stat"));
 			cntList.add(map.get("cnt"));
 			sum += Long.parseLong(map.get("cnt").toString());
+			
+			List<Object> pieData = new ArrayList<Object>();
+			pieData.add("'" + map.get("stat") + "'");
+			pieData.add(map.get("cnt"));
+			pieDataList.add(pieData);
 		}
 		Map<String, Long> map = new HashMap<String, Long>();
 		map.put("sum", sum);
@@ -73,8 +77,8 @@ public class BoardController {
 		
 		model.addAttribute("stat", mapList);
 		model.addAttribute("calstat", map);
-		model.addAttribute("x", xList);
 		model.addAttribute("chartdata", cntList);
+		model.addAttribute("piedata", pieDataList);
 	}
 
 	@GetMapping("/excelnews")

@@ -4,9 +4,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -63,33 +65,45 @@ public class NewsServiceImpl implements NewsService {
 
 		Collections.shuffle(newsList);
 
-		List<Double> usingInternetWeekList = Arrays.asList(0.129, 0.155, 0.143, 0.164, 0.164, 0.129, 0.116); // 일월화수목금토
+		List<Double> usingInternetMonthList = Arrays.asList(12.0, 7.0, 8.0, 7.0, 8.0, 10.0, 7.0, 6.0, 7.0, 8.0, 9.0,
+				11.0); // 0, 1, 2, ..., 11
 
+		List<Double> usingInternetWeekList = Arrays.asList(0.1141, 0.1567, 0.1564, 0.1546, 0.1537, 0.1482, 0.1163); // 일월화수목금토
+
+		Calendar cal = Calendar.getInstance();
+		cal.set(2019, 0, 1, 0, 0);
 		int year = 2019;
 		int month = 1;
-		int date = 1;
 		int hour = 0;
 		int minute = 0;
 
-		for (; date <= 365; date++) {
-			System.out.println("일" + date);
-			Date tempDate = new Date();
-			tempDate.setDate(date);
-			int cnt = (int) (inputCnt * usingInternetWeekList.get(tempDate.getDay()));
+		while (month <= 12) {
+			int date = 1;
+			cal.set(year, month - 1, date, hour, minute);
 
-			Date setDate = setDate(year, month, date, hour, minute);
+			while (date <= cal.getActualMaximum(Calendar.DATE)) {
+				System.out.println("일" + date);
+				Date tempDate = new Date();
+				tempDate.setDate(date);
+				int cnt = (int) (inputCnt * usingInternetWeekList.get(tempDate.getDay()));
 
-			List<Double> timeList = createTimeList(cnt);
+				Date setDate = setDate(year, month, date, hour, minute);
 
-			SimpleDateFormat fmtDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+				List<Double> timeList = createTimeList(cnt);
 
-			int sizeOfNewsList = newsList.size() < timeList.size() ? newsList.size() : timeList.size();
+				SimpleDateFormat fmtDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
 
-			List<NewsVO> newsLst = createFinalData(newsList, setDate, timeList, fmtDate, sizeOfNewsList);
+				int sizeOfNewsList = newsList.size() < timeList.size() ? newsList.size() : timeList.size();
 
-			int batch = 100;
+				List<NewsVO> newsLst = createFinalData(newsList, setDate, timeList, fmtDate, sizeOfNewsList);
 
-			autoInsertBatch(newsLst, fmtDate, batch);
+				int batch = 100;
+
+				autoInsertBatch(newsLst, fmtDate, batch);
+
+				date++;
+			}
+			month++;
 		}
 	}
 
@@ -160,27 +174,35 @@ public class NewsServiceImpl implements NewsService {
 		int sizeOfListOfList = newsList.size() / batch;
 		List<List<NewsVO>> separatedNewsList = new ArrayList<List<NewsVO>>();
 		for (int i = 0; i < sizeOfListOfList; i++) {
-			separatedNewsList.add(newsList.subList(i * batch, (i + 1) * batch));
+			if ((i + 1) * batch < sizeOfListOfList * batch) {
+				separatedNewsList.add(newsList.subList(i * batch, (i + 1) * batch));
+
+			} else {
+				separatedNewsList.add(newsList.subList(i * batch, newsList.size() - 1));
+			}
 		}
+
 		for (List<NewsVO> batchNews : separatedNewsList) {
 			try {
-				newsmapper.batchInsert(batchNews);
-//				Date newsDate = fmtDate.parse(batchNews.get(batchNews.size() - 1).getDate());
-//				
-//				TimerTask task = new TimerTask() {
-//					@Override
-//					public void run() {
-//						try {
-//							newsmapper.batchInsert(batchNews);
-//						} catch (Exception e) {
-//							e.printStackTrace();
-//						}
-//					}
-//				};
-//				
-//				timer.schedule(task, newsDate);
-				
-			} catch (Exception e) {
+				System.out.println(fmtDate.parse(batchNews.get(batchNews.size() - 1).getDate()));
+				Date inputDate = fmtDate.parse(batchNews.get(batchNews.size() - 1).getDate());
+				timer.schedule(new TimerTask() {
+					@Override
+					public void run() {
+						try {
+							System.out
+									.println("입력 시간 : " + fmtDate.parse(batchNews.get(batchNews.size() - 1).getDate()));
+							System.out.println(batchNews.get(batchNews.size() - 1));
+							// newsmapper.batchInsert(batchNews);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+
+				}, inputDate);
+				System.out.println(inputDate);
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
