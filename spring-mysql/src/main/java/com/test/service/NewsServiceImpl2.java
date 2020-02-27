@@ -13,70 +13,88 @@ import com.test.domain.ReporterVO;
 import com.test.mapper.ReporterMapper;
 
 public class NewsServiceImpl2 {
-	
+
 	private static ReporterMapper reportermapper;
-	
+
 	public static void main(String[] args) {
 
+		// inputCnt 개의 전체 뉴스 생성
 		int inputCnt = 1000000;
+
 		// Create titleList
 		List<String> titleList = createTitleList();
 
 		// Create ContentStrList
 		List<String> contentStrList = createContentStrList();
-		
-		// Create ReporterList with activity
+
+		// Create ReporterListWithActivity
 		List<HashMap<String, Object>> reporterListWithActivity = createReporterListWithActivity(inputCnt);
-		
+
 		// Create RandomNewsListByReporterActivity
 		List<NewsVO> newsList = createRandomNewsByReporterActivity(titleList, contentStrList, reporterListWithActivity);
-		
-		// newsList shuffle
+
+		// Shuffle newsList
 		Collections.shuffle(newsList);
-		// inputCnt 개의 뉴스 생성
-		
-		// 월별 퍼센티지 적용
-		List<Double> usingInternetMonthList = Arrays.asList(11.0, 7.0, 8.0, 7.0, 8.0, 1.0, 7.0, 6.0, 7.0, 8.0, 9.0,	11.0);
 
+		// Create monthlyNewsCntList
 		Random rand = new Random();
+		
+		List<Integer> monthlyNewsCntList = createMonthlyNewCntList(inputCnt, rand);
 
+		System.out.println(monthlyNewsCntList);
+
+	}
+
+	private static List<Integer> createMonthlyNewCntList(int inputCnt, Random rand) {
+		List<Double> usingInternetMonthList = Arrays.asList(7.0, 7.0, 8.0, 7.0, 8.0, 7.0, 7.0, 8.0, 7.0, 8.0, 8.0, 9.0);
+
+		double prbSum = 1.0;
 		for (int i = 0; i < usingInternetMonthList.size(); i++) {
 
 			if (i < usingInternetMonthList.size() - 1) {
-				int maxIntervalRange = (int) Math.ceil(usingInternetMonthList.get(i) * 1.2);
-				int minIntervalRange = (int) Math.ceil(usingInternetMonthList.get(i) * 0.8);
+				int maxIntervalRange = (int) Math.ceil(usingInternetMonthList.get(i) * 1.1);
+				int minIntervalRange = (int) Math.ceil(usingInternetMonthList.get(i) * 0.9);
 
-				double randomIntervalRange = ((int) ((rand.nextInt((maxIntervalRange - minIntervalRange) + 1) + minIntervalRange + rand.nextDouble()) * 100) / 10000.0);
+				double randomIntervalRange = ((int) ((rand.nextInt((maxIntervalRange - minIntervalRange) + 1) + minIntervalRange + rand.nextDouble()) * 100)) / 10000.0 ;
 				usingInternetMonthList.set(i, randomIntervalRange);
+				prbSum -= randomIntervalRange;
 			} else {
-				double prbSum = 1.0;
-				for(int j = 0; j < usingInternetMonthList.size() - 1; j++) {
-					prbSum -= usingInternetMonthList.get(j);
-				}
-				prbSum = ((int) (prbSum * 10000)) / 10000.0;
+				prbSum = ((int) (prbSum * inputCnt)) / (double) inputCnt;
 				usingInternetMonthList.set(i, prbSum);
 			}
 		}
-		
-		
-		
-		
+
+		List<Integer> monthlyNewsCntList = new ArrayList<Integer>();
+
+		int sumCnt = 0;
+		for (Double percent : usingInternetMonthList) {
+			monthlyNewsCntList.add((int) Math.ceil(inputCnt * percent));
+			sumCnt += (int) Math.ceil(inputCnt * percent);
+
+			if (sumCnt > inputCnt || 
+					(sumCnt < inputCnt && percent == usingInternetMonthList.get(usingInternetMonthList.size() - 1))) {
+				int extra = sumCnt - inputCnt;
+				int randMonth = rand.nextInt(monthlyNewsCntList.size());
+				monthlyNewsCntList.set(randMonth, monthlyNewsCntList.get(randMonth) - extra);
+			}
+		}
+		return monthlyNewsCntList;
 	}
 
 	private static List<NewsVO> createRandomNewsByReporterActivity(List<String> titleList, List<String> contentStrList,
 			List<HashMap<String, Object>> reporterListWithActivity) {
 		Random rand = new Random();
-		
+
 		List<NewsVO> newsList = new ArrayList<NewsVO>();
-		
+
 		for (HashMap<String, Object> map : reporterListWithActivity) {
 			for (int i = 0; i < ((Long) map.get("cntNews")).intValue(); i++) {
 				NewsVO newsvo = new NewsVO();
-				
+
 				newsvo.setUserno((Integer) map.get("userno"));
-				
+
 				newsvo.setTitle(titleList.get(rand.nextInt(titleList.size())));
-				
+
 				int cntPara = rand.nextInt(4) + 3;
 				StringBuilder news = new StringBuilder();
 				for (int j = 0; j < cntPara; j++) {
@@ -96,15 +114,15 @@ public class NewsServiceImpl2 {
 
 	private static List<HashMap<String, Object>> createReporterListWithActivity(int inputCnt) {
 		List<HashMap<String, Object>> reporterListWithActivity = new ArrayList<HashMap<String, Object>>();
-		
+
 		List<ReporterVO> reporterList = reportermapper.getList();
-		
+
 		System.out.println(reporterList);
 		double sumActivity = 0;
 		for (ReporterVO vo : reporterList) {
 			sumActivity += vo.getActivity();
 		}
-		
+
 		for (ReporterVO vo : reporterList) {
 			HashMap<String, Object> map = new HashMap<String, Object>();
 			map.put("userno", vo.getUserno());
