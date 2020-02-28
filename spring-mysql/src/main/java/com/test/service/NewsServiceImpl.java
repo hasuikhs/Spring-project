@@ -1,9 +1,6 @@
 package com.test.service;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -51,189 +48,258 @@ public class NewsServiceImpl implements NewsService {
 
 	@Override
 	public void insert() {
-		List<String> titleList = new ArrayList<String>();
-		List<String> oldStrList = new ArrayList<String>();
-		List<String> newStrList = new ArrayList<String>();
+		// inputCnt 개의 전체 뉴스 생성
+		int inputCnt = 1000000;
 
-		int inputCnt = 10000;
+		// Create titleList
+		List<String> titleList = createTitleList();
 
-		titleList = preCreateNews(titleList, oldStrList, newStrList);
+		// Create ContentStrList
+		List<String> contentStrList = createContentStrList();
 
-		List<Map<String, Object>> newReporterList = createNewReporterList(inputCnt);
+		// Create ReporterListWithActivity
 
-		List<NewsVO> newsList = createRandomNewsByReporterActivity(titleList, newStrList, newReporterList);
+		List<HashMap<String, Object>> reporterListWithActivity = createReporterListWithActivity(inputCnt,
+				reportermapper.getList());
 
+		// Create RandomNewsListByReporterActivity
+		List<NewsVO> newsList = createRandomNewsByReporterActivity(titleList, contentStrList, reporterListWithActivity);
+
+		// Shuffle newsList
 		Collections.shuffle(newsList);
 
-		List<Double> usingInternetMonthList = Arrays.asList(12.0, 7.0, 8.0, 7.0, 8.0, 10.0, 7.0, 6.0, 7.0, 8.0, 9.0,
-				11.0); // 0, 1, 2, ..., 11
-
-		List<Double> usingInternetWeekList = Arrays.asList(0.1141, 0.1567, 0.1564, 0.1546, 0.1537, 0.1482, 0.1163); // 일월화수목금토
-
-		Calendar cal = Calendar.getInstance();
-		cal.set(2019, 0, 1, 0, 0);
-		int year = 2019;
-		int month = 1;
-		int hour = 0;
-		int minute = 0;
-
-		while (month <= 12) {
-			int date = 1;
-			cal.set(year, month - 1, date, hour, minute);
-
-			while (date <= cal.getActualMaximum(Calendar.DATE)) {
-				System.out.println("일" + date);
-				Date tempDate = new Date();
-				tempDate.setDate(date);
-				int cnt = (int) (inputCnt * usingInternetWeekList.get(tempDate.getDay()));
-
-				Date setDate = setDate(year, month, date, hour, minute);
-
-				List<Double> timeList = createTimeList(cnt);
-
-				SimpleDateFormat fmtDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
-
-				int sizeOfNewsList = newsList.size() < timeList.size() ? newsList.size() : timeList.size();
-
-				List<NewsVO> newsLst = createFinalData(newsList, setDate, timeList, fmtDate, sizeOfNewsList);
-
-				int batch = 100;
-
-				autoInsertBatch(newsLst, fmtDate, batch);
-
-				date++;
-			}
-			month++;
-		}
-	}
-
-	private List<Double> createTimeList(int cnt) {
-		int millisTimeOfHour = 3600000;
-
-		List<Double> usingInternetDayList = Arrays.asList(0.0424, 0.0322, 0.0213, 0.0172, 0.0149, 0.0131, 0.013, 0.0167,
-				0.024, 0.04, 0.0447, 0.0474, 0.0459, 0.0487, 0.0471, 0.0569, 0.0675, 0.0711, 0.0596, 0.0555, 0.0499,
-				0.0557, 0.0566, 0.0586);
-
-		List<Double> intervalTimeList = new ArrayList<Double>();
-
-		for (Double normOfHour : usingInternetDayList) {
-			double newsOfHour = cnt * normOfHour;
-			intervalTimeList.add(newsOfHour);
-		}
-
 		Random rand = new Random();
 
-		List<Double> timeList = new ArrayList<Double>();
-		double sumIntervalTime = 0;
-		for (Double intervalTime : intervalTimeList) {
-			for (double i = 0; i < intervalTime; i++) {
-
-				double interTime = millisTimeOfHour / intervalTime;
-
-				int maxIntervalRange = (int) Math.ceil(interTime * 1.2);
-				int minIntervalRange = (int) Math.floor(interTime * 0.8);
-
-				int randomIntervalTime = rand.nextInt((maxIntervalRange - minIntervalRange) + 1) + minIntervalRange;
-
-				timeList.add(sumIntervalTime);
-				sumIntervalTime += randomIntervalTime;
+		if (newsList.size() > inputCnt) {
+			int newsListSubInput = newsList.size() - inputCnt;
+			for (int i = 0; i < newsListSubInput; i++) {
+				newsList.remove(rand.nextInt(newsList.size()));
 			}
 		}
-		return timeList;
-	}
 
-	private Date setDate(int year, int month, int date, int hour, int minute) {
-		Date setDate = new Date();
-		setDate.setYear(year - 1900);
-		setDate.setMonth(month - 1);
-		setDate.setDate(date);
-		setDate.setHours(hour);
-		setDate.setMinutes(minute);
-		return setDate;
-	}
+		// create MonthlyNewsCntList
+		List<Integer> monthlyNewsCntList = createMonthlyNewsCntList(inputCnt, rand);
 
-	private List<NewsVO> createFinalData(List<NewsVO> newsList, Date setDate, List<Double> timeList,
-			SimpleDateFormat fmtDate, int sizeOfNewsList) {
-		List<NewsVO> newsLst = new ArrayList<NewsVO>();
+		// create dateList
+		List<String> dateList = new ArrayList<String>();
+		Calendar cal = Calendar.getInstance();
+		int year = 2020;
 
-		for (int i = 0; i < sizeOfNewsList; i++) {
-			NewsVO newsvo = newsList.get(i);
-			long setTime = (long) (setDate.getTime() + timeList.get(i));
+		createDateList(rand, monthlyNewsCntList, dateList, cal, year);
 
-			Date writeDate = new Date();
-			writeDate.setTime(setTime);
-			newsvo.setDate(fmtDate.format(writeDate));
-			newsLst.add(newsvo);
+		int i = 0;
+		for (NewsVO newsvo : newsList) {
+			newsvo.setDate(dateList.get(i));
+			newsList.set(i, newsvo);
+			i++;
 		}
-		return newsLst;
-	}
 
-	private void autoInsertBatch(List<NewsVO> newsList, SimpleDateFormat fmtDate, int batch) {
+		int batch = 100;
 		Timer timer = new Timer();
 
-		int sizeOfListOfList = newsList.size() / batch;
+		int sizeOfList = newsList.size() / batch;
 		List<List<NewsVO>> separatedNewsList = new ArrayList<List<NewsVO>>();
-		for (int i = 0; i < sizeOfListOfList; i++) {
-			if ((i + 1) * batch < sizeOfListOfList * batch) {
-				separatedNewsList.add(newsList.subList(i * batch, (i + 1) * batch));
 
-			} else {
-				separatedNewsList.add(newsList.subList(i * batch, newsList.size() - 1));
+		for (int j = 0; j < sizeOfList; j++) {
+			if ((j + 1) * batch < sizeOfList * batch) {
+				separatedNewsList.add(newsList.subList(j * batch, (j + 1) * batch));
 			}
 		}
-
+		
+		SimpleDateFormat fmtDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+		
+		System.out.println("adsfasdf");
 		for (List<NewsVO> batchNews : separatedNewsList) {
-			try {
-				System.out.println(fmtDate.parse(batchNews.get(batchNews.size() - 1).getDate()));
-				Date inputDate = fmtDate.parse(batchNews.get(batchNews.size() - 1).getDate());
-				timer.schedule(new TimerTask() {
-					@Override
-					public void run() {
-						try {
-							System.out
-									.println("입력 시간 : " + fmtDate.parse(batchNews.get(batchNews.size() - 1).getDate()));
-							System.out.println(batchNews.get(batchNews.size() - 1));
-							// newsmapper.batchInsert(batchNews);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
+			System.out.println("ㅇㄹㅇㄹㅇㄹ");
+//			try {
+//				Date inputDate = fmtDate.parse(batchNews.get(batchNews.size() - 1).getDate());
+//				timer.schedule(new TimerTask() {
+//					@Override
+//					public void run() {
+//						try {
+//							System.out.println("입력 시간 : " + fmtDate.parse(batchNews.get(batchNews.size() - 1).getDate()));
+//						} catch (ParseException e) {
+//							e.printStackTrace();
+//						}
+//						System.out.println(batchNews.get(batchNews.size() - 1));
+//						// newsmapper.batchInsert(batchNews);
+//					}
+//					
+//				}, inputDate);
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+		}
+
+	}
+
+	private void createDateList(Random rand, List<Integer> monthlyNewsCntList, List<String> dateList, Calendar cal,
+			int year) {
+		List<Double> usingInternetWeekList = Arrays.asList(80.0, 100.0, 100.0, 90.0, 90.0, 90.0, 80.0);
+
+		for (int i = 0; i < monthlyNewsCntList.size(); i++) {
+			int day = 1;
+			cal.set(year, i, day);
+			int monthlyNewsCnt = monthlyNewsCntList.get(i);
+
+			int dailyNewsCnt = monthlyNewsCnt / cal.getActualMaximum(Calendar.DATE);
+
+			List<Integer> dailyNewsCntList = new ArrayList<Integer>();
+			Date tempDate = new Date();
+			tempDate.setYear(year - 1900);
+			tempDate.setMonth(i);
+
+			int LastDayOfMonth = cal.getActualMaximum(Calendar.DATE);
+			while (day <= LastDayOfMonth) {
+				tempDate.setDate(day);
+
+				double tempPrb = usingInternetWeekList.get(tempDate.getDay());
+
+				int maxTempPrb = (int) Math.ceil(tempPrb * 1.1);
+				int minTempPrb = (int) Math.ceil(tempPrb * 0.9);
+
+				double randomTempPrb = ((int) ((rand.nextInt((maxTempPrb - minTempPrb) + 1) + minTempPrb
+						+ rand.nextDouble()) * 100)) / 10000.0;
+				dailyNewsCntList.add((int) (dailyNewsCnt * randomTempPrb));
+				if (day == LastDayOfMonth) {
+					int sumCntDailyNews = 0;
+					for (Integer cntDailyNews : dailyNewsCntList) {
+						sumCntDailyNews += cntDailyNews;
 					}
 
-				}, inputDate);
-				System.out.println(inputDate);
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+					int restCntOfMonthNews = monthlyNewsCnt - sumCntDailyNews;
+					int cntCorNews = restCntOfMonthNews / LastDayOfMonth;
+
+					int sumCntNewsOfDay = 0;
+					for (int j = 0; j < LastDayOfMonth; j++) {
+						int cntCorNewsInt = dailyNewsCntList.get(j) + cntCorNews;
+						sumCntNewsOfDay += cntCorNewsInt;
+						dailyNewsCntList.set(j, cntCorNewsInt);
+						if ((sumCntNewsOfDay != monthlyNewsCnt) && (j == (LastDayOfMonth - 1))) {
+
+							int randDay = rand.nextInt(LastDayOfMonth);
+							int extra = sumCntNewsOfDay - monthlyNewsCnt;
+							dailyNewsCntList.set(randDay, dailyNewsCntList.get(randDay) - extra);
+						}
+					}
+				}
+				day++;
+			}
+
+			int tDay = 1;
+			for (Integer cntOfDailyNews : dailyNewsCntList) {
+				List<Double> usingInternetDayList = Arrays.asList(0.0424, 0.0322, 0.0213, 0.0172, 0.0149, 0.0131, 0.013,
+						0.0167, 0.024, 0.04, 0.0447, 0.0474, 0.0459, 0.0487, 0.0471, 0.0569, 0.0675, 0.0711, 0.0596,
+						0.0555, 0.0499, 0.0557, 0.0566, 0.0586);
+
+				List<Integer> hourlyNews = new ArrayList<Integer>();
+				for (int k = 0; k < usingInternetDayList.size(); k++) {
+					int standardUsingHour = (int) (usingInternetDayList.get(k) * 10000);
+					int maxUsingHour = (int) Math.ceil(standardUsingHour * 1.02);
+					int minUsingHour = (int) Math.floor(standardUsingHour * 0.98);
+
+					double randomUsingHour = (rand.nextInt((maxUsingHour - minUsingHour) + 1) + minUsingHour) / 10000.0;
+
+					hourlyNews.add((int) Math.round(cntOfDailyNews * randomUsingHour));
+				}
+
+				int sumOfHourNews = 0;
+				for (int k = 0; k < hourlyNews.size(); k++) {
+					sumOfHourNews += hourlyNews.get(k);
+					if ((sumOfHourNews != cntOfDailyNews) && (k == hourlyNews.size() - 1)) {
+						int randomHour = rand.nextInt(hourlyNews.size());
+						int extra = sumOfHourNews - cntOfDailyNews;
+
+						hourlyNews.set(randomHour, hourlyNews.get(randomHour) - extra);
+					}
+				}
+
+				int millisTimeOfHour = 3600000; // 1시간 밀리초
+
+				Date curDate = new Date();
+				curDate.setYear(year - 1900);
+				curDate.setMonth(i);
+				curDate.setDate(tDay);
+				curDate.setMinutes(0);
+				curDate.setSeconds(0);
+				for (int k = 0; k < hourlyNews.size(); k++) {
+					int sumIntervalTime = 0;
+
+					// k = 0 ~ 23 시 지정
+					curDate.setHours(k);
+					int interTime = millisTimeOfHour / hourlyNews.get(k);
+
+					for (int l = 0; l < hourlyNews.get(k); l++) {
+						Date tmpDate = new Date();
+						tmpDate.setTime(curDate.getTime() + sumIntervalTime);
+
+						SimpleDateFormat fmtDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+						dateList.add(fmtDate.format(tmpDate).toString());
+						sumIntervalTime += interTime;
+					}
+				}
+				tDay++;
 			}
 		}
 	}
 
-	private List<NewsVO> createRandomNewsByReporterActivity(List<String> titleList, List<String> newStrList,
-			List<Map<String, Object>> newReporterList) {
+	private List<Integer> createMonthlyNewsCntList(int inputCnt, Random rand) {
+		List<Double> usingInternetMonthList = Arrays.asList(9.0, 9.0, 7.0, 7.0, 5.0, 7.0, 9.0, 9.0, 7.0, 6.0, 7.0, 8.0);
+
+		double prbSum = 1.0;
+		for (int i = 0; i < usingInternetMonthList.size(); i++) {
+
+			if (i < usingInternetMonthList.size() - 1) {
+				int maxIntervalRange = (int) Math.ceil(usingInternetMonthList.get(i) * 1.1);
+				int minIntervalRange = (int) Math.ceil(usingInternetMonthList.get(i) * 0.9);
+
+				double randomIntervalRange = ((int) ((rand.nextInt((maxIntervalRange - minIntervalRange) + 1)
+						+ minIntervalRange + rand.nextDouble()) * 100)) / 10000.0;
+				usingInternetMonthList.set(i, randomIntervalRange);
+				prbSum -= randomIntervalRange;
+			} else {
+				prbSum = ((int) (prbSum * inputCnt)) / (double) inputCnt;
+				usingInternetMonthList.set(i, prbSum);
+			}
+		}
+
+		List<Integer> monthlyNewsCntList = new ArrayList<Integer>();
+
+		int sumCnt = 0;
+		for (Double percent : usingInternetMonthList) {
+			monthlyNewsCntList.add((int) Math.ceil(inputCnt * percent));
+			sumCnt += (int) Math.ceil(inputCnt * percent);
+
+			if ((sumCnt != inputCnt) && (percent == usingInternetMonthList.get(usingInternetMonthList.size() - 1))) {
+				int extra = sumCnt - inputCnt;
+				int randMonth = rand.nextInt(monthlyNewsCntList.size());
+				monthlyNewsCntList.set(randMonth, monthlyNewsCntList.get(randMonth) - extra);
+			}
+		}
+		return monthlyNewsCntList;
+	}
+
+	private List<NewsVO> createRandomNewsByReporterActivity(List<String> titleList, List<String> contentStrList,
+			List<HashMap<String, Object>> reporterListWithActivity) {
 		Random rand = new Random();
 
-		// 리스트<뉴스VO> 만들고
 		List<NewsVO> newsList = new ArrayList<NewsVO>();
 
-		// 맵에 정해진 뉴스의 숫자별로 뉴스VO를 만들어서 리스트<뉴스VO> ADD
-		for (Map<String, Object> map : newReporterList) {
+		for (HashMap<String, Object> map : reporterListWithActivity) {
 			for (int i = 0; i < ((Long) map.get("cntNews")).intValue(); i++) {
 				NewsVO newsvo = new NewsVO();
-				// 유저 번호
+
 				newsvo.setUserno((Integer) map.get("userno"));
 
-				// 제목
-				String title = titleList.get(rand.nextInt(titleList.size()));
-				newsvo.setTitle(title);
+				newsvo.setTitle(titleList.get(rand.nextInt(titleList.size())));
 
-				// 내용
 				int cntPara = rand.nextInt(4) + 3;
 				StringBuilder news = new StringBuilder();
 				for (int j = 0; j < cntPara; j++) {
 					StringBuilder para = new StringBuilder();
 					int cntString = rand.nextInt(4) + 3;
 					for (int k = 0; k < cntString; k++) {
-						para.append(newStrList.get(rand.nextInt(newStrList.size()))).append(" ");
+						para.append(contentStrList.get(rand.nextInt(contentStrList.size()))).append(" ");
 					}
 					news.append(para).append("\n");
 				}
@@ -244,89 +310,83 @@ public class NewsServiceImpl implements NewsService {
 		return newsList;
 	}
 
-	private List<Map<String, Object>> createNewReporterList(int inputCnt) {
-		List<ReporterVO> reporterList = new ArrayList<ReporterVO>();
-		reporterList = reportermapper.getList();
+	private List<HashMap<String, Object>> createReporterListWithActivity(int inputCnt, List<ReporterVO> reporterList) {
+		List<HashMap<String, Object>> reporterListWithActivity = new ArrayList<HashMap<String, Object>>();
 
 		double sumActivity = 0;
 		for (ReporterVO vo : reporterList) {
 			sumActivity += vo.getActivity();
 		}
 
-		List<Map<String, Object>> newReporterList = new ArrayList<Map<String, Object>>();
 		for (ReporterVO vo : reporterList) {
-			Map<String, Object> map = new HashMap<String, Object>();
+			HashMap<String, Object> map = new HashMap<String, Object>();
 			map.put("userno", vo.getUserno());
 			map.put("cntNews", Math.round(inputCnt * (vo.getActivity() / sumActivity)));
-			newReporterList.add(map);
+			reporterListWithActivity.add(map);
 		}
-		return newReporterList;
+		return reporterListWithActivity;
 	}
 
-	private List<String> preCreateNews(List<String> titleList, List<String> oldStrList, List<String> newStrList) {
+	private List<String> createContentStrList() {
+		List<String> contentStrList = new ArrayList<String>();
+		// createContentStrList
+		String contentPath = "D:\\Dev\\JAVA\\data\\news\\contents.txt";
+
 		try {
-			titleList = createTitleList();
+			FileInputStream contentFis = new FileInputStream(contentPath);
+			byte[] contentBuffer = new byte[contentFis.available()];
+			while (contentFis.read(contentBuffer) != -1) {
+			}
+			contentFis.close();
 
-			byte[] readBuffer = createContentList();
+			List<String> paraList = new ArrayList<String>();
 
-			createNewsStringList(oldStrList, newStrList, readBuffer);
+			// 뉴스 자르기
+			// 뉴스
+			String news = new String(contentBuffer, "UTF-8");
+
+			// 문단 리스트
+			paraList = Arrays.asList(news.split("\\n"));
+
+			// 문장 리스트
+			List<String> oldStrList = new ArrayList<String>();
+			for (String str : paraList) {
+				// \r 제거 후 split
+				oldStrList.addAll(Arrays.asList(str.replaceAll("\r", "").split("\\. ")));
+			}
+
+			// . 다시 붙이기
+			for (String str : oldStrList) {
+				String lastChar = Character.toString(str.charAt(str.length() - 1));
+				if (!lastChar.equals(".")) {
+					str += ".";
+				}
+				contentStrList.add(str);
+			}
 
 		} catch (Exception e) {
-			e.getStackTrace();
+			e.printStackTrace();
 		}
-		return titleList;
+		return contentStrList;
 	}
 
-	private void createNewsStringList(List<String> oldStrList, List<String> newStrList, byte[] readBuffer)
-			throws UnsupportedEncodingException {
-		List<String> ParaList = new ArrayList<String>();
-		// 뉴스 자르기
-		// 뉴스
-		String news = new String(readBuffer, "UTF-8");
+	private List<String> createTitleList() {
+		List<String> titleList = new ArrayList<String>();
 
-		// 문단 리스트
-		ParaList = Arrays.asList(news.split("\\n"));
-
-		// 문장 리스트
-		for (String str : ParaList) {
-			// \r 제거 후 split
-			oldStrList.addAll(Arrays.asList(str.replaceAll("\r", "").split("\\. ")));
-		}
-
-		// . 다시 붙이기
-		for (String str : oldStrList) {
-			String lastChar = Character.toString(str.charAt(str.length() - 1));
-			if (!lastChar.equals(".")) {
-				str += ".";
-			}
-			newStrList.add(str);
-		}
-	}
-
-	private byte[] createContentList() throws FileNotFoundException, IOException {
-		// 바이트 단위로 파일읽기
-		String contentPath = "D:\\Dev\\JAVA\\data\\news\\contents.txt"; // 대상 파일
-		FileInputStream contentfis = new FileInputStream(contentPath);// 파일 스트림 생성
-
-		// 버퍼 선언
-		byte[] readBuffer = new byte[contentfis.available()];
-		while (contentfis.read(readBuffer) != -1) {
-		}
-		contentfis.close();
-		return readBuffer;
-	}
-
-	private List<String> createTitleList() throws FileNotFoundException, IOException, UnsupportedEncodingException {
-		List<String> titleList;
+		// createTitleList
 		String titlePath = "D:\\Dev\\JAVA\\data\\news\\titles.txt";
-		FileInputStream titlefis = new FileInputStream(titlePath);
-		byte[] titleBuffer = new byte[titlefis.available()];
-		while (titlefis.read(titleBuffer) != -1) {
-		}
-		titlefis.close();
+		try {
+			FileInputStream titleFis = new FileInputStream(titlePath);
+			byte[] titleBuffer = new byte[titleFis.available()];
+			while (titleFis.read(titleBuffer) != -1) {
+			}
+			titleFis.close();
 
-		String titles = new String(titleBuffer, "UTF-8");
-		titleList = Arrays.asList(titles.split("\\n"));
+			String titles = new String(titleBuffer, "UTF-8");
+			titleList = Arrays.asList(titles.split("\\n"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return titleList;
 	}
 

@@ -1,5 +1,6 @@
 package testtest;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -11,6 +12,8 @@ import java.util.stream.IntStream;
 public class ListTest {
 	public static void main(String[] args) {
 
+		List<String> dateList = new ArrayList<String>();
+		
 		Random rand = new Random();
 
 		int inputCnt = 1000000;
@@ -143,7 +146,8 @@ public class ListTest {
 				
 				System.out.println(year + "³â" + i +"¿ù" + tDay + "ÀÏ");	// i = 0 ~ 11
 				Date curDate = new Date();
-				curDate.setYear(year - 120);
+				curDate.setYear(year - 1900);
+				System.out.println(curDate.getYear());
 				curDate.setMonth(i);
 				curDate.setDate(tDay);
 				curDate.setMinutes(0);
@@ -158,8 +162,11 @@ public class ListTest {
 					for (int l = 0; l < hourlyNews.get(k); l++) {
 						Date tmpDate = new Date();
 						tmpDate.setTime(curDate.getTime() + sumIntervalTime);
-						System.out.println(tmpDate);
+//						System.out.println(tmpDate);
 						
+						SimpleDateFormat fmtDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+//						System.out.println(fmtDate.format(tmpDate));
+						dateList.add(fmtDate.format(tmpDate).toString());
 						sumIntervalTime += interTime;
 						testtest++;
 					}
@@ -168,6 +175,6 @@ public class ListTest {
 				tDay++;
 			}
 		}
-		
+		System.out.println(dateList);
 	}
 }
