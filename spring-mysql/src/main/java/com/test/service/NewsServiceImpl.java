@@ -83,54 +83,58 @@ public class NewsServiceImpl implements NewsService {
 		// create dateList
 		List<String> dateList = new ArrayList<String>();
 		Calendar cal = Calendar.getInstance();
-		int year = 2020;
+		int year = 2019;
 
 		createDateList(rand, monthlyNewsCntList, dateList, cal, year);
 
+		mergeNewsAndDate(newsList, dateList);
+		
+		// dateList 초기화
+		dateList = new ArrayList<String>();
+
+		int batch = 1000;
+		int sizeOfList = newsList.size() / batch;
+		List<List<NewsVO>> separatedNewsList = new ArrayList<List<NewsVO>>();
+
+		for (int j = 0; j < sizeOfList; j++) {
+			separatedNewsList.add(newsList.subList(j * batch, ((j + 1) * batch)));
+		}
+
+		autoBatchInsert(separatedNewsList);
+	}
+
+	private void autoBatchInsert(List<List<NewsVO>> separatedNewsList) {
+		SimpleDateFormat fmtDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+		
+		Timer timer = new Timer();
+
+		for (List<NewsVO> batchNews : separatedNewsList) {
+			try {
+				Date inputDate = fmtDate.parse(batchNews.get(batchNews.size() - 1).getDate().toString());
+				TimerTask timertask = new TimerTask() {
+					@Override
+					public void run() {
+						try {
+							newsmapper.batchInsert(batchNews);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				};
+				timer.schedule(timertask, inputDate);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private void mergeNewsAndDate(List<NewsVO> newsList, List<String> dateList) {
 		int i = 0;
 		for (NewsVO newsvo : newsList) {
 			newsvo.setDate(dateList.get(i));
 			newsList.set(i, newsvo);
 			i++;
 		}
-
-		int batch = 100;
-		Timer timer = new Timer();
-
-		int sizeOfList = newsList.size() / batch;
-		List<List<NewsVO>> separatedNewsList = new ArrayList<List<NewsVO>>();
-
-		for (int j = 0; j < sizeOfList; j++) {
-			if ((j + 1) * batch < sizeOfList * batch) {
-				separatedNewsList.add(newsList.subList(j * batch, (j + 1) * batch));
-			}
-		}
-		
-		SimpleDateFormat fmtDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
-		
-		System.out.println("adsfasdf");
-		for (List<NewsVO> batchNews : separatedNewsList) {
-			System.out.println("ㅇㄹㅇㄹㅇㄹ");
-//			try {
-//				Date inputDate = fmtDate.parse(batchNews.get(batchNews.size() - 1).getDate());
-//				timer.schedule(new TimerTask() {
-//					@Override
-//					public void run() {
-//						try {
-//							System.out.println("입력 시간 : " + fmtDate.parse(batchNews.get(batchNews.size() - 1).getDate()));
-//						} catch (ParseException e) {
-//							e.printStackTrace();
-//						}
-//						System.out.println(batchNews.get(batchNews.size() - 1));
-//						// newsmapper.batchInsert(batchNews);
-//					}
-//					
-//				}, inputDate);
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
-		}
-
 	}
 
 	private void createDateList(Random rand, List<Integer> monthlyNewsCntList, List<String> dateList, Calendar cal,
